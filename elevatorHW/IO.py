@@ -3,6 +3,21 @@
 
 __author__      = "gitgudd"
 
+
+#Number of floors. Hardware-dependent, do not modify.
+N_FLOORS = 4
+
+# Number of buttons (and corresponding lamps) on a per-floor basis
+N_BUTTONS = 3
+
+DIRN_DOWN = -1
+DIRN_STOP = 0
+DIRN_UP = 1
+
+BUTTON_CALL_UP = 0
+BUTTON_CALL_DOWN = 1
+BUTTON_COMMAND = 2
+
 from ctypes import cdll
 import os
 
@@ -14,16 +29,13 @@ elev = cdll.LoadLibrary('./IOdriver.so')
 
 elev.elevator_hardware_init()
 
-
-elev.elevator_hardware_set_motor_direction(DIRN_UP)
-
-
 while(True):
-	elev.elevator_hardware_set_motor_direction(DIRN_DOWN)
-	while(elev.elevator_hardware_get_floor_sensor_signal() != 0):
+	elev.elevator_hardware_set_motor_direction(DIRN_UP)
+	while(elev.elevator_hardware_get_floor_sensor_signal() != 3):
+		print elev.elevator_hardware_get_floor_sensor_signal()
 		pass
 
-	elev.elevator_hardware_set_motor_direction(DIRN_UP)
+	elev.elevator_hardware_set_motor_direction(DIRN_DOWN)
 
-	while(elev.elevator_hardware_get_floor_sensor_signal() != 3):
+	while(elev.elevator_hardware_get_floor_sensor_signal() != 0):
 		pass
