@@ -76,3 +76,10 @@ Case:
 Ordertables needed:
 - 1 universal order table. This is based on that everyone has information of everything in case of disconnects.
 - 1 node based order table. This is the orders that a node is expected to fullfill. Is this needed for everyone? The orders exist in the global table also untill fulfilled so in case of a disconnect the order would 		still exist in the golbal table and could just be delegated again with regards to disconnect elevators.
+
+Network Module:
+- Heartbeat
+	- Every node snedsout their 
+- JSON messages
+- Broadcast
+- Listen
