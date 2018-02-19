@@ -31,5 +31,3 @@ def main():
 	print worldview_parsed["states"][1]
 	return
 
-main()
-
