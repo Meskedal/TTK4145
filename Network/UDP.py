@@ -14,7 +14,7 @@ def udp_broadcast_heartbeat(port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	sock.sendto(message, (target_ip, target_port))
 
-def udp_heartbeat_receive(port,queue,timeout):
+def udp_receive_heartbeat(port,queue,timeout):
 
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -35,11 +35,3 @@ def udp_heartbeat_receive(port,queue,timeout):
     queue.put(addr)
 
     return True
-
-<<<<<<< HEAD
-
-
-    
-=======
-def 
->>>>>>> 17892a3f0083758bc64d1814295ffb3118110122
