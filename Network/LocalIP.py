@@ -4,7 +4,7 @@ __author__      = "gitgudd"
 
 import socket
 
-def localIP():
+def local_IP():
 
 	import socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -13,3 +13,4 @@ def localIP():
 	print IP
 	s.close()
 	return IP
+local_IP()
