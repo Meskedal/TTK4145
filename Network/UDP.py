@@ -3,35 +3,45 @@
 
 __author__      = "gitgudd"
 
+from LocalIP import *
+import socket, errno
+from time import sleep
 
-import socket
 
-def udp_broadcast_heartbeat(port):
+def udp_broadcast_heartbeat(port, broadcastEvent):
+	while(broadcastEvent.isSet()):
+		try:
+			ip = local_ip()
+		except IOError as e:
+			print e
+		target_ip = '127.0.0.1'
+		target_port = port
+		sleep(0.5)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock.sendto(ip, (target_ip, target_port))
+	print("exited broadcast")
 
-	target_ip = '127.0.0.1'
-	target_port = port
-	message = 'hei'
-	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	sock.sendto(message, (target_ip, target_port))
+def udp_receive_heartbeat(port,queue,timeout, receiveEvent):
+	while(receiveEvent.isSet()):
 
-def udp_receive_heartbeat(port,queue,timeout):
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock.settimeout(timeout)
+		try:
+			sock.bind(('127.0.0.1', port))
+		except:
+			print 'failure to bind'
+			sock.close()
 
-	sock.settimeout(timeout)
-	try:
-    	sock.bind(('127.0.0.1', port))
-	except:
-    	print 'failure to bind'
-    	sock.close()
-    	return
+		try:
+			#print("ready")
+			data, addr = sock.recvfrom(1024)
+			#print("got")
+			if (receiveEvent.isSet()):
+				queue.put(data)
+			#print("put data in queue")
+		except socket.timeout as e:
+			print e
 
-    try:
-    	data, addr = sock.recvfrom(1024)
-    except timeout as e:
-    	print e
-    	return False
 
-    queue.put(addr)
-
-    return True
+	print("exited receive")
