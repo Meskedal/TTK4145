@@ -35,11 +35,3 @@ def udp_heartbeat_receive(port,queue,timeout):
     queue.put(addr)
 
     return True
-
-<<<<<<< HEAD
-
-
-    
-=======
-def 
->>>>>>> 17892a3f0083758bc64d1814295ffb3118110122
