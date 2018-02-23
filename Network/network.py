@@ -10,8 +10,8 @@ class Thread(threading.Thread):
 
 
 def heartbeat():
-	Peers = [] #Add timestamp since last redundant check and add to Lost list after t-amout of time
-	Lost = [] 
+	Peers = {} #Add timestamp since last redundant check and add to Lost list after t-amout of time
+	Lost = {}
 	q = Queue.Queue()
 	receiveEvent = threading.Event()
 	receiveEvent.set()
@@ -20,19 +20,31 @@ def heartbeat():
 	receive = Thread(udp_receive_heartbeat,20002, q, 1.6, receiveEvent)
 	broadcast = Thread(udp_broadcast_heartbeat, 20002, broadcastEvent)
 	while(True):
+		current_time = time()
 		try:
 			if not q.empty():
 				item = q.get()
-				if item not in Peers:
-					Peers.append(item)
+				Peers[item[0]] = item[1]
+				if item[0] in Lost:
+					del Lost[item[0]]
 
 		except KeyboardInterrupt as e:
-			print e
+			print (e)
 			receiveEvent.clear()
 			broadcastEvent.clear()
 			receive.join()
 			broadcast.join()
-			print Peers
+			print_peers(Peers)
 			return
-	
+
+		for ip in Peers:
+			if(Peers[ip] < current_time - 15): #Hearbeat timeout time
+				Lost[ip] = current_time
+				del Peers[ip]
+
+def print_peers(Peers):
+	for ip in Peers:
+		print(ip + " - " + repr(Peers[ip]))
+	return
+
 heartbeat()

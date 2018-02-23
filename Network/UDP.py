@@ -5,7 +5,7 @@ __author__      = "gitgudd"
 
 from LocalIP import *
 import socket, errno
-from time import sleep
+from time import sleep, time
 
 
 def udp_broadcast_heartbeat(port, broadcastEvent):
@@ -19,7 +19,7 @@ def udp_broadcast_heartbeat(port, broadcastEvent):
 		sleep(0.5)
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.sendto(ip, (target_ip, target_port))
-	print("exited broadcast")
+	print("exited broadcast ")
 
 def udp_receive_heartbeat(port,queue,timeout, receiveEvent):
 	while(receiveEvent.isSet()):
@@ -36,12 +36,11 @@ def udp_receive_heartbeat(port,queue,timeout, receiveEvent):
 		try:
 			#print("ready")
 			data, addr = sock.recvfrom(1024)
-			#print("got")
+			entry = [data, time()]
 			if (receiveEvent.isSet()):
-				queue.put(data)
+				queue.put(entry)
 			#print("put data in queue")
 		except socket.timeout as e:
-			print e
-
+			print(e)
 
 	print("exited receive")
