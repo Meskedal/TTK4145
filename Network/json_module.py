@@ -12,12 +12,14 @@ def array_to_json(A):
 def worldview_to_json(orders, states):
 
 	worldview = {
-	"orders": orders,
+	
 	"states": states,
+	"orders": orders,
 	}
 	return json.dumps(worldview)
 
 def json_to_worldview(str):
+	
 	return
 
 def main():
@@ -28,6 +30,9 @@ def main():
 	result = array_to_json(A)
 	worldview = worldview_to_json(A,B)
 	worldview_parsed = json.loads(worldview)
-	print worldview_parsed["states"][1]
+	a = worldview_parsed["states"][1][1]
+	
+	print b
 	return
+main();
 
