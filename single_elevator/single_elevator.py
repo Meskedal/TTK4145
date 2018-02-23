@@ -22,9 +22,9 @@ from ctypes import cdll
 import os
 
 os.system("gcc -c -fPIC main.c -o main.o")
-os.system("gcc -shared -Wl,-soname,main.so -o main.so  main.o")
+os.system("gcc -shared -Wl,-soname,pymain.so -o pymain.so  main.o")
 
-main = cdll.LoadLibrary('./main.so')
+main = cdll.LoadLibrary('./pymain.so')
 
-main.main();
+main.main()
 

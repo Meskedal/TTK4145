@@ -7,6 +7,7 @@
 
 #include "elevator_hardware.h"
 #include "con_load.h"
+#include "test.h"
 
 static int sockfd;
 static pthread_mutex_t sockmtx;
