@@ -4,12 +4,14 @@
 #include <unistd.h>
 
 #include "con_load.h"
-#include "elevator_io_device.h"
+//#include "elevator_io_device.h"
+#include "driver/elevator_hardware.h"
 #include "fsm.h"
 #include "timer.h"
 
 
 int main(void){
+
     printf("Started!\n");
     
     int inputPollRate_ms = 25;
@@ -17,9 +19,10 @@ int main(void){
         con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
     )
     
-    ElevInputDevice input = elevio_getInputDevice();    
+    //ElevInputDevice input = elevio_getInputDevice();  
+    elevator_hardware_init();  
     
-    if(input.floorSensor() == -1){
+    if(elevator_hardware_get_floor_sensor_signal() == -1){
         fsm_onInitBetweenFloors();
     }
         
@@ -28,7 +31,7 @@ int main(void){
             static int prev[N_FLOORS][N_BUTTONS];
             for(int f = 0; f < N_FLOORS; f++){
                 for(int b = 0; b < N_BUTTONS; b++){
-                    int v = input.requestButton(f, b);
+                    int v = elevator_hardware_get_button_signal(b, f);
                     if(v  &&  v != prev[f][b]){
                         fsm_onRequestButtonPress(f, b);
                     }
@@ -39,7 +42,7 @@ int main(void){
         
         { // Floor sensor
             static int prev;
-            int f = input.floorSensor();
+            int f = elevator_hardware_get_floor_sensor_signal();
             if(f != -1  &&  f != prev){
                 fsm_onFloorArrival(f);
             }

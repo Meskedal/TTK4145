@@ -5,7 +5,8 @@
 
 #include "con_load.h"
 #include "elevator.h"
-#include "elevator_io_device.h"
+//#include "elevator_io_device.h"
+#include "driver/elevator_hardware.h"
 #include "requests.h"
 #include "timer.h"
 
@@ -24,26 +25,31 @@ static void __attribute__((constructor)) fsm_init(){
         )
     )
     
-    outputDevice = elevio_getOutputDevice();
+    //outputDevice = elevio_getOutputDevice();
 }
 
 static void setAllLights(Elevator es){
     for(int floor = 0; floor < N_FLOORS; floor++){
         for(int btn = 0; btn < N_BUTTONS; btn++){
-            outputDevice.requestButtonLight(floor, btn, es.requests[floor][btn]);
+            elevator_hardware_set_button_lamp(btn, floor, es.requests[floor][btn]);
         }
     }
 }
 
 void fsm_onInitBetweenFloors(void){
-    outputDevice.motorDirection(D_Down);
+    elevator_hardware_set_motor_direction(D_Down);
     elevator.dirn = D_Down;
     elevator.behaviour = EB_Moving;
 }
 
+int get_a(){
+    return 3;
+}
+
+
 void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
-    printf("\n\n%s(%d, %s)\n", __FUNCTION__, btn_floor, elevio_button_toString(btn_type));
-    elevator_print(elevator);
+    //printf("\n\n%s(%d, %s)\n", __FUNCTION__, btn_floor, elevio_button_toString(btn_type));
+    //elevator_print(elevator);
     
     switch(elevator.behaviour){
         
@@ -61,13 +67,13 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
         
     case EB_Idle:
         if(elevator.floor == btn_floor){
-            outputDevice.doorLight(1);
+            elevator_hardware_set_door_open_lamp(1);
             timer_start(elevator.config.doorOpenDuration_s);
             elevator.behaviour = EB_DoorOpen;
         } else {
             elevator.requests[btn_floor][btn_type] = 1;
             elevator.dirn = requests_chooseDirection(elevator);
-            outputDevice.motorDirection(elevator.dirn);
+            elevator_hardware_set_motor_direction(elevator.dirn);
             elevator.behaviour = EB_Moving;
         }
         break;
@@ -76,26 +82,26 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     
     setAllLights(elevator);
     
-    printf("\nNew state:\n");
-    elevator_print(elevator);
+    //printf("\nNew state:\n");
+    //elevator_print(elevator);
 }
 
 
 
 
 void fsm_onFloorArrival(int newFloor){
-    printf("\n\n%s(%d)\n", __FUNCTION__, newFloor);
-    elevator_print(elevator);
+    //printf("\n\n%s(%d)\n", __FUNCTION__, newFloor);
+    //elevator_print(elevator);
     
     elevator.floor = newFloor;
     
-    outputDevice.floorIndicator(elevator.floor);
+    elevator_hardware_set_floor_indicator(elevator.floor);
     
     switch(elevator.behaviour){
     case EB_Moving:
         if(requests_shouldStop(elevator)){
-            outputDevice.motorDirection(D_Stop);
-            outputDevice.doorLight(1);
+            elevator_hardware_set_motor_direction(D_Stop);
+            elevator_hardware_set_door_open_lamp(1);
             elevator = requests_clearAtCurrentFloor(elevator);
             timer_start(elevator.config.doorOpenDuration_s);
             setAllLights(elevator);
@@ -106,23 +112,23 @@ void fsm_onFloorArrival(int newFloor){
         break;
     }
     
-    printf("\nNew state:\n");
-    elevator_print(elevator); 
+    //printf("\nNew state:\n");
+    //elevator_print(elevator); 
 }
 
 
 
 
 void fsm_onDoorTimeout(void){
-    printf("\n\n%s()\n", __FUNCTION__);
-    elevator_print(elevator);
+    //printf("\n\n%s()\n", __FUNCTION__);
+    //elevator_print(elevator);
     
     switch(elevator.behaviour){
     case EB_DoorOpen:
         elevator.dirn = requests_chooseDirection(elevator);
         
-        outputDevice.doorLight(0);
-        outputDevice.motorDirection(elevator.dirn);
+        elevator_hardware_set_door_open_lamp(0);
+        elevator_hardware_set_motor_direction(elevator.dirn);
         
         if(elevator.dirn == D_Stop){
             elevator.behaviour = EB_Idle;
@@ -135,8 +141,8 @@ void fsm_onDoorTimeout(void){
         break;
     }
     
-    printf("\nNew state:\n");
-    elevator_print(elevator);
+    //printf("\nNew state:\n");
+    //elevator_print(elevator);
 }
 
 

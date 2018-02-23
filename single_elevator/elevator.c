@@ -15,7 +15,7 @@ char* eb_toString(ElevatorBehaviour eb){
 
 
 
-void elevator_print(Elevator es){
+/*void elevator_print(Elevator es){
     printf("  +--------------------+\n");
     printf(
         "  |floor = %-2d          |\n"
@@ -42,6 +42,7 @@ void elevator_print(Elevator es){
     }
     printf("  +--------------------+\n");
 }
+*/
 
 Elevator elevator_uninitialized(void){
     return (Elevator){
