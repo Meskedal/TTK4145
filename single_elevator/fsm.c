@@ -157,11 +157,13 @@ int fsm_get_e_behaviour(void){
     return elevator.behaviour;
 }
 
-int* fsm_get_e_behaviour(void){
-    return elevator.requests;
+int fsm_get_e_request(int floor, int btn){
+    return elevator.requests[floor][btn];
 }
 
-
+int fsm_set_e_request(int value, int floor, int btn){
+    elevator.requests[floor][btn] = value;
+}
 
 
 

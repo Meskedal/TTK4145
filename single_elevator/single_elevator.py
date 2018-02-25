@@ -7,6 +7,7 @@ __author__      = "gitgudd"
 
 from ctypes import *
 import os
+import sys
 
 os.system("gcc -c -fPIC main.c -o main.o")
 os.system("gcc -c -fPIC driver/elevator_hardware.c -o driver/elevator_hardware.o")
@@ -18,7 +19,8 @@ os.system("gcc -c -fPIC requests.c -o requests.o")
 os.system("gcc -shared -Wl,-soname,pymain.so -o pymain.so  main.o driver/elevator_hardware.o fsm.o timer.o elevator.o requests.o -lc")
 
 
-
+N_FLOORS = 4
+N_BUTTONS = 3
 
 
 
@@ -27,11 +29,17 @@ os.system("gcc -shared -Wl,-soname,pymain.so -o pymain.so  main.o driver/elevato
 
 main = cdll.LoadLibrary('./pymain.so')
 
+def get_requests(main):
+	ELEVATOR_REQUESTS = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
+	for f in range(0,N_FLOORS):
+		for b in range(0,N_BUTTONS):
+			ELEVATOR_REQUESTS[f][b] = main.fsm_get_e_request(c_int(f),c_int(b))
+	return ELEVATOR_REQUESTS
+
 def go(main):
 	print("Started")
 	inputPollRate_ms = 25
-	N_FLOORS = 4
-	N_BUTTONS = 3
+	#
 
 	main.elevator_hardware_init()  
 	
@@ -58,9 +66,11 @@ def go(main):
 		if(main.timer_timedOut()):
 			main.fsm_onDoorTimeout()
 			main.timer_stop()
+
 		main.usleep(inputPollRate_ms*1000)
-		Elevator_requests = fsm_get_e_requests()
-		print(main.fsm_get_e_floor())
+		requests = get_requests(main)
+		print(requests) 
+		print("\n")
 
 
 go(main)
