@@ -55,3 +55,7 @@ Elevator elevator_uninitialized(void){
         },
     };
 }
+
+int elevator_get_floor(Elevator e){
+    
+}

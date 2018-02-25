@@ -57,44 +57,22 @@ int requests_shouldStop(Elevator e){
 }
 
 
-Elevator requests_clearAtCurrentFloor(Elevator e){
-        
-    switch(e.config.clearRequestVariant){
-    case CV_All:
-        for(Button btn = 0; btn < N_BUTTONS; btn++){
+//Elevator requests_clearAtCurrentFloor(Elevator e){
+Elevator requests_clearAtCurrentFloor(Elevator e_old, int simulate){
+    Elevator e = e_old;
+    for(Button btn = 0; btn < N_BUTTONS; btn++){
+        if(e.requests[e.floor][btn]){
             e.requests[e.floor][btn] = 0;
-        }
-        break;
-        
-    case CV_InDirn:
-        e.requests[e.floor][B_Cab] = 0;
-        switch(e.dirn){
-        case D_Up:
-            e.requests[e.floor][B_HallUp] = 0;
-            if(!requests_above(e)){
-                e.requests[e.floor][B_HallDown] = 0;
+            if(!simulate){
+                for(Button btn = 0; btn < N_BUTTONS; btn++){
+                    if(e_old.requests[e.floor][btn]){
+                        e_old.requests[e.floor][btn] = 0;
+                        return e_old; // unsure of this
+                    }
+                }
             }
-            break;
-            
-        case D_Down:
-            e.requests[e.floor][B_HallDown] = 0;
-            if(!requests_below(e)){
-                e.requests[e.floor][B_HallUp] = 0;
-            }
-            break;
-            
-        case D_Stop:
-        default:
-            e.requests[e.floor][B_HallUp] = 0;
-            e.requests[e.floor][B_HallDown] = 0;
-            break;
         }
-        break;
-        
-    default:
-        break;
-    }
-    
+    }   
     return e;
 }
 

@@ -1,0 +1,18 @@
+C to python interface
+
+
+Get functions:
+	get_e_requests()
+	get_e_dirn()
+	get_e_floor()
+	get_e_behaviour()
+
+Set functions:
+	set_e_requests()
+
+
+
+
+***WorldView***
+- Global table of all hall orders at every floor with timestamps
+- 

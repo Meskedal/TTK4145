@@ -102,7 +102,7 @@ void fsm_onFloorArrival(int newFloor){
         if(requests_shouldStop(elevator)){
             elevator_hardware_set_motor_direction(D_Stop);
             elevator_hardware_set_door_open_lamp(1);
-            elevator = requests_clearAtCurrentFloor(elevator);
+            elevator = requests_clearAtCurrentFloor(elevator, 0);
             timer_start(elevator.config.doorOpenDuration_s);
             setAllLights(elevator);
             elevator.behaviour = EB_DoorOpen;
@@ -145,12 +145,21 @@ void fsm_onDoorTimeout(void){
     //elevator_print(elevator);
 }
 
+int fsm_get_e_floor(void){
+    return elevator.floor;
+}
 
+int fsm_get_e_dirn(void){
+    return elevator.dirn;
+}
 
+int fsm_get_e_behaviour(void){
+    return elevator.behaviour;
+}
 
-
-
-
+int* fsm_get_e_behaviour(void){
+    return elevator.requests;
+}
 
 
 
