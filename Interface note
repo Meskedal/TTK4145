@@ -16,3 +16,5 @@ Set functions:
 ***WorldView***
 - Global table of all hall orders at every floor with timestamps
 - 
+
+Time for elevator python side to update is about 25us
