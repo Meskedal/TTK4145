@@ -54,7 +54,7 @@ def get_requests(c):
 			ELEVATOR_REQUESTS[f][b] = c.fsm_get_e_request(c_int(f),c_int(b))
 	return ELEVATOR_REQUESTS
 
-def main():
+def c_main():
 	c = cdll.LoadLibrary('./pymain.so')
 
 	print("Started")
