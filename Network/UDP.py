@@ -37,7 +37,7 @@ def udp_receive_heartbeat(port,queue,timeout, receiveEvent, print_lock):
 		try:
 			data, addr = sock.recvfrom(1024)
 			print_lock.acquire()
-			print(addr)
+			#print(addr)
 			print_lock.release()
 			entry = [data, time()]
 			if (receiveEvent.isSet()):

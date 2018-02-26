@@ -14,7 +14,7 @@ static pthread_mutex_t sockmtx;
 void elevator_hardware_init() {
     char ip[16] = {0};
     char port[8] = {0};
-    con_load("elevator_hardware.con",
+    con_load("single_elevator/elevator_hardware.con",
 	     con_val("com_ip",   ip,   "%s")
 	     con_val("com_port", port, "%s")
         )

@@ -9,12 +9,12 @@ import numpy
 def array_to_json(A):
 	return json.dumps(A)
 
-def worldview_to_json(orders, states):
+def worldview_to_json(requests, states):
 
 	worldview = {
 	
 	"states": states,
-	"orders": orders,
+	"requests": orders,
 	}
 	return json.dumps(worldview)
 
@@ -34,5 +34,7 @@ def main():
 	
 	print b
 	return
-main();
+	
+main()
+
 
