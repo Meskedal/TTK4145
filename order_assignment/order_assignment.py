@@ -3,41 +3,54 @@
 
 __author__      = "gitgudd"
 
-from copy import copy
+from copy import deepcopy
 
 
-# Define these elsewhere
-TRAVEL_TIME = 3
-DOOR_OPEN_TIME = 2      
+## Global variables ## 
+
+N_FLOORS = 4
+N_BUTTONS = 3
+
+EB_Idle = 0
+EB_DoorOpen = 1
+EB_Moving = 2
+
 D_up = 1                
 D_down = -1
 D_stop = 0
+
+TRAVEL_TIME = 3
+DOOR_OPEN_TIME = 3      
+
+
 ########################
 
-def timeToIdle(elevator):
-	elevator.update()
+
+
+def time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
 	duration = 0
-	if(elevator.behaviour == EB_Idle):
-		e_dirn = requests_choose_direction_py(elevator)##
-		if e_dirn == D_Stop:
+	if elevator.behaviour == EB_Idle:
+		elevator_dirn = requests_choose_direction_py(elevator)
+		if elevator_dirn == D_Stop:
 			return duration
 	elif elevator.behaviour == EB_Moving:
 		duration += TRAVEL_TIME/2
-		elevator.floor += elevator.dirn
-	elif elevator.behaviour == EB_DoorOpen:
+		elevator_copy.floor += elevator_copy.dirn
+	elif elevator_copy.behaviour == EB_DoorOpen:
 		duration -= DOOR_OPEN_TIME/2
    
 	while True:
-		if requests_shouldStop(elevator):
+		if requests_shouldStop(elevator_copy):
 			elevator = requests_clear_at_current_floor(elevator, True)
 			duration += DOOR_OPEN_TIME
-			elevator.dirn = requests_chooseDirection(e);
-			if(e.dirn == D_Stop){
+			elevator.dirn = requests_choose_direction_py(elevator);
+			if elevator.dirn == D_Stop
 				return duration
-			}
-		}
-		e.floor += e.direction;
-		duration += TRAVEL_TIME;
+			
+		
+		elevator.floor += elevator.dirn;
+		duration += TRAVEL_TIME
+	return duration
 
 
 def requests_choose_direction_py(elevator):
@@ -90,13 +103,15 @@ def requests_should_stop(elevator): # Returns boolean
 		return True
 
 
-def requests_clear_at_current_floor(elevator):
-	elevator_new = copy(elevator)
+def requests_clear_at_current_floor(elevator, simulate):
+	elevator_new = deepcopy(elevator)
 	for btn in range(0,N_BUTTONS):
 		if elevator_new.requests[elevator_new.floor][btn] == 1:
 			elevator_new.requests[elevator_new.floor] = 0
 			if simulate == False:
-				return elevator
+				if elevator.requests[elevator.floor][btn] == 1:
+					elevator.requests[elevator.floor] = 0
+				return  elevator
 
 	return elevator_new
 
