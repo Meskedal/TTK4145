@@ -5,7 +5,6 @@
 
 #include "con_load.h"
 #include "elevator.h"
-//#include "elevator_io_device.h"
 #include "driver/elevator_hardware.h"
 #include "requests.h"
 #include "timer.h"
