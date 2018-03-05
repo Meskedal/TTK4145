@@ -74,7 +74,7 @@ def get_requests(c):
 			ELEVATOR_REQUESTS[f][b] = c.fsm_get_e_request(c_int(f),c_int(b))
 	return ELEVATOR_REQUESTS
 
-def c_main(c_main_run_event, elevator_queue, print_lock):
+def c_main(c_main_run_event, elevator_queue, local_orders_queue, print_lock):
 	c = cdll.LoadLibrary('./single_elevator/pymain.so')
 
 	print("Started")
@@ -106,24 +106,25 @@ def c_main(c_main_run_event, elevator_queue, print_lock):
 			c.timer_stop()
 
 		elevator.update()
-		if(elevator_queue.empty):
-			elevator_queue.put(elevator)
+		#print(elevator_to_dict(elevator))
+		if(elevator_queue.empty()):
+			elevator_queue.put(elevator_to_dict(elevator))
 		else:
 			elevator_queue.get() #may get concurrency erros, maybe use task done/join
-			elevator_queue.put(elevator)
-		print_lock.acquire()
-		print(elevator_to_json(elevator))
-		print_lock.release()
+			elevator_queue.put(elevator_to_dict(elevator))
+		#print_lock.acquire()
+		#print(elevator_to_json(elevator))
+		#print_lock.release()
 		c.usleep(inputPollRate_ms*1000)
 
-def elevator_to_json(elevator):
+def elevator_to_dict(elevator):
 	eks = {}
 	eks[elevator.id] = {}
 	eks[elevator.id]["behaviour"] = elevator.behaviour
 	eks[elevator.id]["floor"] = elevator.floor
 	eks[elevator.id]["dirn"] = elevator.dirn
 	eks[elevator.id]["requests"] = elevator.requests
-	return json.dumps(eks)
+	return eks
 
 def worldview(Peers):
 

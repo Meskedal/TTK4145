@@ -18,6 +18,7 @@ def main():
 	elevator_queue = Queue.Queue()
 	worldview_foreign_queue = Queue.Queue()
 	Peers_queue2 = Queue.Queue()
+	local_orders_queue = Queue.Queue()
 	Peers = {}
 
 	print_lock = threading.Lock()
@@ -26,20 +27,24 @@ def main():
 	heartbeat_run_event.set()
 	c_main_run_event.set()
 	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, print_lock)
+	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, print_lock)
 
 	go = True
-
 	while(go):
 		try:
-			sleep(10)
+			worldview = elevator_queue.get()
+			print_lock.acquire()
+			print(worldview)
+			print_lock.release()
+			sleep(2)
 			if(not Peers_queue2.empty()):
 				item = Peers_queue2.get()
 				Peers[item[0]] = item[1]
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign[0],worldview_foreign[1])
-				worldview = should_i_take_order(worldview, localIP(), Peers)
+				worldview = should_i_take_order(worldview, local_ip(), Peers)
+				print(worldview)
 
 		except KeyboardInterrupt as e:
 			print e
@@ -53,13 +58,6 @@ def main():
 			print("Exited Gracefully")
 			print_lock.release()
 			go = False
-
-
-
-main()
-
-def elevator_to_worldview():
-	return
 
 def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 	hall_orders = worldview['hall_orders']
@@ -84,7 +82,7 @@ def should_i_take_order(worldview, my_id, Peers):
 		for b in range (0, N_BUTTONS-1):
 			nontaken_order = 0 #Number of elevators that does not have the order
 			for i in range(0, len(Peers)):
-				local_orders = worldview['elevators'][Peers[i]]
+				local_orders = worldview['elevators'][Peers[i]]['requests']
 				if(hall_orders[f][b][0] == local_orders[f][b]):#must do this for all peers before calculating time
 					break
 				else:
@@ -108,11 +106,20 @@ def should_i_take_order(worldview, my_id, Peers):
 					else:
 						pass
 				if(i_should_take):
-					worldview['elevators'][my_id][f][b] = 1
+					worldview['elevators'][my_id]['requests'][f][b] = 1
 				else:
 					pass #Check next button
 			else:
 				pass #A Elevator has the order
 	return worldview
+def worldview_from_local_elevator(worldview, local_orders_elevator):
+	my_ip = local_ip()
+	local_orders = worldview['elevators'][my_ip]['requests']
+	for f in range (0, N_FLOORS):
+		for b in range (0, N_BUTTONS-1):
+			pass
+main()
+
+
 				
 

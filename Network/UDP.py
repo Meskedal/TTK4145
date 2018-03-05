@@ -10,13 +10,19 @@ from time import sleep, time
 
 def udp_broadcast_heartbeat(port, broadcastEvent, worldview_queue, print_lock):
 	while(broadcastEvent.isSet()):
-		worldview = udp_send_worldview(worldview_queue)
+		worldview = udp_send_worldview(worldview_queue, print_lock)
+		print_lock.acquire()
+		print("worldview aquired")
+		print_lock.release()
 		worldview = json.dumps(worldview)
 		target_ip = '127.0.0.1'
 		target_port = port
 		sleep(0.5)
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.sendto(worldview, (target_ip, target_port))
+		print_lock.acquire()
+		print("sent")
+		print_lock.release()
 
 def udp_receive_heartbeat(port, Peers_queue, timeout, receiveEvent, worldview_foreign_queue, print_lock):
 	while(receiveEvent.isSet()):

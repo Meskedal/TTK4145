@@ -23,7 +23,7 @@ def network_heartbeat(heartbeatEvent, worldview_queue, worldview_foreign_queue, 
 	receiveEvent.set()
 	broadcastEvent.set()
 	receive = Thread(udp_receive_heartbeat,20002, Peers_queue, 1.6, receiveEvent, worldview_foreign_queue, print_lock)
-	broadcast = Thread(udp_broadcast_heartbeat, 20002, broadcastEvent, print_lock)
+	broadcast = Thread(udp_broadcast_heartbeat, 20002, broadcastEvent, worldview_foreign_queue, print_lock)
 
 	while(heartbeatEvent.isSet()):
 		current_time = time()
