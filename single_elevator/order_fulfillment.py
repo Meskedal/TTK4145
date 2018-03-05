@@ -103,4 +103,9 @@ def elevator_to_json(elevator):
 	eks[elevator.id]["requests"] = elevator.requests
 	return json.dumps(eks)
 
+def worldview(Peers):
+
+	e = elevator()
+	return e
+
 #main()

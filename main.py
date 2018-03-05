@@ -11,6 +11,8 @@ from Network.network import *
  
 
 def main():
+	worldview = {}
+	elevator_queue = Queue.Queue()
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
 	c_main_run_event = threading.Event()
