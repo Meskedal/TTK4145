@@ -22,7 +22,7 @@ def udp_broadcast_heartbeat(port, broadcastEvent, print_lock):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.sendto(ip, (target_ip, target_port))
 
-def udp_receive_heartbeat(port,queue,timeout, receiveEvent, print_lock):
+def udp_receive_heartbeat(port, Peers_queue, timeout, receiveEvent, print_lock):
 	while(receiveEvent.isSet()):
 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -41,8 +41,11 @@ def udp_receive_heartbeat(port,queue,timeout, receiveEvent, print_lock):
 			print_lock.release()
 			entry = [data, time()]
 			if (receiveEvent.isSet()):
-				queue.put(entry)
+				Peers_queue.put(entry)
 		except socket.timeout as e:
 			print_lock.acquire()
 			print(e)
 			print_lock.release()
+
+#def send_worldview(worldview_queue):
+	#worldview()

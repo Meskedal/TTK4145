@@ -28,13 +28,21 @@ EB_Moving = 2
 
 
 class Elevator:
-	def __init__(self, c):
-		self.c = c
-		self.behaviour = c.fsm_get_e_behaviour()
-		self.floor = c.fsm_get_e_floor()
-		self.dirn = c.fsm_get_e_dirn()
-		self.requests = get_requests(c)
-		self.id = local_ip()
+	def __init__(self, c, trueElevator):
+		if(trueElevator):
+			self.c = c
+			self.behaviour = c.fsm_get_e_behaviour()
+			self.floor = c.fsm_get_e_floor()
+			self.dirn = c.fsm_get_e_dirn()
+			self.requests = get_requests(c)
+			self.id = local_ip()
+		else:
+			self.c = None
+			self.behaviour = None
+			self.floor = None
+			self.dirn = None
+			self.requests = None
+			self.id = None
 
 	def update(self):
 		self.behaviour = self.c.fsm_get_e_behaviour()
@@ -50,6 +58,15 @@ class Elevator:
 		print(self.requests)
 		print("")
 
+	def worldview_to_elevator(self, elevator_dict):
+		self.behaviour = elevator_dict["behaviour"]
+		self.floor = elevator_dict["floor"]
+		self.dirn = elevator_dict["dirn"]
+		self.requests = elevator_dict["requests"]
+		
+
+
+
 def get_requests(c):
 	ELEVATOR_REQUESTS = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
 	for f in range(0,N_FLOORS):
@@ -57,7 +74,7 @@ def get_requests(c):
 			ELEVATOR_REQUESTS[f][b] = c.fsm_get_e_request(c_int(f),c_int(b))
 	return ELEVATOR_REQUESTS
 
-def c_main(c_main_run_event, print_lock):
+def c_main(c_main_run_event, elevator_queue, print_lock):
 	c = cdll.LoadLibrary('./single_elevator/pymain.so')
 
 	print("Started")
@@ -67,7 +84,7 @@ def c_main(c_main_run_event, print_lock):
 	
 	if(c.elevator_hardware_get_floor_sensor_signal() == -1):
 		c.fsm_onInitBetweenFloors()
-	elevator = Elevator(c)
+	elevator = Elevator(c,True)
 
 	while(c_main_run_event.is_set()):
 		prev = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
@@ -89,6 +106,11 @@ def c_main(c_main_run_event, print_lock):
 			c.timer_stop()
 
 		elevator.update()
+		if(elevator_queue.empty):
+			elevator_queue.put(elevator)
+		else:
+			elevator_queue.get() #may get concurrency erros, maybe use task done/join
+			elevator_queue.put(elevator)
 		print_lock.acquire()
 		print(elevator_to_json(elevator))
 		print_lock.release()
