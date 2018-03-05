@@ -24,6 +24,7 @@ DOOR_OPEN_TIME = 3
 
 
 ########################
+class worldview()
 
 
 

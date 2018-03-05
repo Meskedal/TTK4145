@@ -13,15 +13,19 @@ from Network.network import *
 
 def main():
 	worldview = {}
+	worldview_foreign = {}
 	worldview_queue = Queue.Queue()
 	elevator_queue = Queue.Queue()
+	worldview_foreign_queue = Queue.Queue()
+	Peers_queue2 = Queue.Queue()
+	Peers = {}
 
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
 	c_main_run_event = threading.Event()
 	heartbeat_run_event.set()
 	c_main_run_event.set()
-	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, print_lock)
+	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
 	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, print_lock)
 
 	go = True
@@ -29,9 +33,14 @@ def main():
 	while(go):
 		try:
 			sleep(10)
+			if(not Peers_queue2.empty()):
+				item = Peers_queue2.get()
+				Peers[item[0]] = item[1]
+			if(not worldview_foreign_queue.empty()):
+				worldview_foreign = worldview_foreign_queue.get()
+				worldview = worldview_hall_orders_correct(worldview, worldview_foreign[0],worldview_foreign[1])
+				worldview = should_i_take_order(worldview, localIP(), Peers)
 
-			#if(worldview_queue.empty):
-				#worldview_queue.
 		except KeyboardInterrupt as e:
 			print e
 			heartbeat_run_event.clear()

@@ -14,7 +14,7 @@ def print_peers(Peers):
 		print(ip + " - " + repr(Peers[ip]))
 	return
 
-def network_heartbeat(heartbeatEvent, worldview_queue, print_lock):
+def network_heartbeat(heartbeatEvent, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock):
 	Peers = {} #Add timestamp since last redundant check and add to Lost list after t-amout of time
 	Lost = {}
 	Peers_queue = Queue.Queue()
@@ -22,13 +22,14 @@ def network_heartbeat(heartbeatEvent, worldview_queue, print_lock):
 	broadcastEvent = threading.Event()
 	receiveEvent.set()
 	broadcastEvent.set()
-	receive = Thread(udp_receive_heartbeat,20002, Peers_queue, 1.6, receiveEvent, print_lock)
+	receive = Thread(udp_receive_heartbeat,20002, Peers_queue, 1.6, receiveEvent, worldview_foreign_queue, print_lock)
 	broadcast = Thread(udp_broadcast_heartbeat, 20002, broadcastEvent, print_lock)
 
 	while(heartbeatEvent.isSet()):
 		current_time = time()
-		if not q.empty():
-			item = q.get()
+		if not Peers_queue.empty():
+			item = Peers_queue.get()
+			Peers_queue2.put(item)
 			Peers[item[0]] = item[1]
 			if item[0] in Lost:
 				del Lost[item[0]]
