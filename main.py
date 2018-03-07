@@ -27,7 +27,7 @@ def main():
 	heartbeat_run_event.set()
 	c_main_run_event.set()
 	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, print_lock)
+	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, network_local_orders_queue, print_lock)
 
 	go = True
 	while(go):
@@ -43,7 +43,7 @@ def main():
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign[0],worldview_foreign[1])
-				worldview = should_i_take_order(worldview, local_ip(), Peers)
+				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
 				print(worldview)
 
 		except KeyboardInterrupt as e:
@@ -113,7 +113,7 @@ def should_i_take_order(worldview, my_id, Peers):
 				pass #A Elevator has the order
 	return worldview
 def worldview_from_local_elevator(worldview, local_orders_elevator):
-	my_ip = local_ip()
+	my_ip = network_local_ip()
 	local_orders = worldview['elevators'][my_ip]['requests']
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
