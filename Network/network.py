@@ -53,7 +53,7 @@ def network_broadcast_heartbeat(broadcastEvent, worldview_queue, print_lock):#Br
 	target_ip = '127.0.0.1'
 	target_port = 20002
 	while(broadcastEvent.isSet()):
-		worldview = udp_create_worldview(worldview_queue, print_lock)
+		worldview = network_create_worldview(worldview_queue, print_lock)
 		
 		print_lock.acquire()
 		print("worldview aquired")
