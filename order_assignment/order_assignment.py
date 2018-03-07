@@ -116,7 +116,7 @@ def assignment_clear_at_current_floor(elevator, simulate):
 
 	return elevator_new
 
-
+#hei
 
 
 
