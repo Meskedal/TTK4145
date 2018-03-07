@@ -28,10 +28,10 @@ class worldview()
 
 
 
-def time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
+def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
 	duration = 0
 	if elevator.behaviour == EB_Idle:
-		elevator_dirn = requests_choose_direction_py(elevator)
+		elevator_dirn = assignment_choose_direction(elevator)
 		if elevator_dirn == D_Stop:
 			return duration
 	elif elevator.behaviour == EB_Moving:
@@ -41,10 +41,10 @@ def time_to_idle(elevator): # Remember to pass a copy of the elevator with the n
 		duration -= DOOR_OPEN_TIME/2
    
 	while True:
-		if requests_shouldStop(elevator_copy):
-			elevator = requests_clear_at_current_floor(elevator, True)
+		if assignment_should_stop(elevator_copy):
+			elevator = assignment_clear_at_current_floor(elevator, True)
 			duration += DOOR_OPEN_TIME
-			elevator.dirn = requests_choose_direction_py(elevator);
+			elevator.dirn = assignment_choose_direction(elevator);
 			if elevator.dirn == D_Stop
 				return duration
 			
@@ -54,19 +54,19 @@ def time_to_idle(elevator): # Remember to pass a copy of the elevator with the n
 	return duration
 
 
-def requests_choose_direction_py(elevator):
+def assignment_choose_direction(elevator):
 
 	if elevator.dirn == D_up:
-		if requests_above_py(elevator):
+		if assignment_above(elevator):
 			return D_up
-		elif requests_below_py(elevator):
+		elif assignment_below(elevator):
 			return D_down
 		else:
 			return D_stop
 	elif elevator.dirn == D_stop:
-		if requests_below_py(elevator):
+		if assignment_below(elevator):
 			return D_down
-		elif requests_above_py(elevator):
+		elif assignment_above(elevator):
 			return D_up
 		else: 
 			return D_stop
@@ -74,7 +74,7 @@ def requests_choose_direction_py(elevator):
 		return D_stop
 
 
-def requests_above_py(elevator): # Returns boolean
+def assignment_above(elevator): # Returns boolean
 
 	for f in range(elevator.floor+1, N_FLOORS):
 		for btn in range(0,N_BUTTONS):
@@ -82,21 +82,21 @@ def requests_above_py(elevator): # Returns boolean
 				return True
 	return False
 
-def requests_below_py(elevator): # Returns boolean
+def assignment_below(elevator): # Returns boolean
 	for f in range(0, elevator.floor):
 		for btn in range(0,N_BUTTONS):
 			if elevator.requests[f][btn]:
 				return True
 	return False
 
-def requests_should_stop(elevator): # Returns boolean
+def assignment_should_stop(elevator): # Returns boolean
 	if elevator.dirn == D_Down:
-		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not requests_below(elevator):
+		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_below(elevator):
 			return True
 		else:
 			return False
 	elif elevator.drin == D_up:
-		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not requests_above(elevator):
+		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_above(elevator):
 			return True
 		else:
 			return False
@@ -104,7 +104,7 @@ def requests_should_stop(elevator): # Returns boolean
 		return True
 
 
-def requests_clear_at_current_floor(elevator, simulate):
+def assignment_clear_at_current_floor(elevator, simulate):
 	elevator_new = deepcopy(elevator)
 	for btn in range(0,N_BUTTONS):
 		if elevator_new.requests[elevator_new.floor][btn] == 1:
