@@ -77,7 +77,7 @@ def get_requests(c):
 def c_main(c_main_run_event, elevator_queue, local_orders_queue, print_lock):
 	c = cdll.LoadLibrary('./single_elevator/pymain.so')
 
-	print("Started")
+	#print("Started")
 	inputPollRate_ms = 25
 
 	c.elevator_hardware_init()  
@@ -126,9 +126,13 @@ def elevator_to_dict(elevator):
 	eks[elevator.id]["requests"] = elevator.requests
 	return eks
 
-def worldview(Peers):
-
-	e = elevator()
-	return e
+def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
+	for f in range (0, N_FLOORS):
+		for b in range (0, N_BUTTONS-1):
+			if(worldview_local_orders == 1 and elevator.requests[f][b] != worldview_local_orders[f][b]):
+				elevator.c.fsm_onRequestButtonPress(f, b)
+			else:
+				pass
+	
 
 #main()
