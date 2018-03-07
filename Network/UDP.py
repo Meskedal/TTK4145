@@ -51,7 +51,7 @@ def udp_receive_heartbeat(port, Peers_queue, timeout, receiveEvent, worldview_fo
 			print(e)
 			print_lock.release()
 
-def udp_send_worldview(worldview_queue, print_lock):
+def udp_send_worldview(worldview_queue, print_lock): #Creates worldview dictionary with ip as key
 	while(worldview_queue.empty()):
 		pass
 	worldview = worldview_queue.get()
