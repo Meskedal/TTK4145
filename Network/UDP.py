@@ -3,7 +3,7 @@
 
 __author__      = "gitgudd"
 
-from LocalIP import *
+from local_ip import *
 import socket, errno, json
 from time import sleep, time
 
