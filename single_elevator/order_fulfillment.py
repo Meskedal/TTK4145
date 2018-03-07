@@ -28,8 +28,8 @@ EB_Moving = 2
 
 
 class Elevator:
-	def __init__(self, c, trueElevator):
-		if(trueElevator):
+	def __init__(self, c, true_elevator):
+		if(true_elevator):
 			self.c = c
 			self.behaviour = c.fsm_get_e_behaviour()
 			self.floor = c.fsm_get_e_floor()
