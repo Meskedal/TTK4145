@@ -58,20 +58,9 @@ int requests_shouldStop(Elevator e){
 
 
 //Elevator requests_clearAtCurrentFloor(Elevator e){
-Elevator requests_clearAtCurrentFloor(Elevator e_old, int simulate){
-    Elevator e = e_old;
+Elevator requests_clearAtCurrentFloor(Elevator e){
     for(Button btn = 0; btn < N_BUTTONS; btn++){
-        if(e.requests[e.floor][btn]){
-            e.requests[e.floor][btn] = 0;
-            if(!simulate){
-                for(Button btn = 0; btn < N_BUTTONS; btn++){
-                    if(e_old.requests[e.floor][btn]){
-                        e_old.requests[e.floor][btn] = 0;
-                        return e_old; // unsure of this
-                    }
-                }
-            }
-        }
+         e.requests[e.floor][btn] = 0;
     }   
     return e;
 }

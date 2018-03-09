@@ -19,6 +19,7 @@ def main():
 	worldview_foreign_queue = Queue.Queue()
 	Peers_queue2 = Queue.Queue()
 	local_orders_queue = Queue.Queue()
+	hall_orders_pos_queue = Queue.Queue()
 	Peers = {}
 
 	print_lock = threading.Lock()
@@ -27,10 +28,15 @@ def main():
 	heartbeat_run_event.set()
 	c_main_run_event.set()
 	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, network_local_orders_queue, print_lock)
+	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
 
 	go = True
 	while(go):
+		try:
+			if not hall_orders_pos_queue.empty():
+				for i in range(0,len(hall_orders_pos_queue)):
+					order = hall_orders_pos_queue():
+					worldview[hall_orders][]
 		try:
 			worldview = elevator_queue.get()
 			print_lock.acquire()

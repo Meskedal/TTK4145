@@ -101,7 +101,7 @@ void fsm_onFloorArrival(int newFloor){
         if(requests_shouldStop(elevator)){
             elevator_hardware_set_motor_direction(D_Stop);
             elevator_hardware_set_door_open_lamp(1);
-            elevator = requests_clearAtCurrentFloor(elevator, 0);
+            elevator = requests_clearAtCurrentFloor(elevator);
             timer_start(elevator.config.doorOpenDuration_s);
             setAllLights(elevator);
             elevator.behaviour = EB_DoorOpen;

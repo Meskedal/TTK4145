@@ -6,9 +6,8 @@ __author__      = "gitgudd"
 
 
 from ctypes import *
-import os
-from LocalIP import *
-import json
+from network import *
+import os, json
 
 os.system("gcc -c -fPIC single_elevator/main.c -o single_elevator/main.o")
 os.system("gcc -c -fPIC single_elevator/driver/elevator_hardware.c -o single_elevator/driver/elevator_hardware.o")
@@ -35,7 +34,7 @@ class Elevator:
 			self.floor = c.fsm_get_e_floor()
 			self.dirn = c.fsm_get_e_dirn()
 			self.requests = get_requests(c)
-			self.id = local_ip()
+			self.id = network_local_ip()
 		else:
 			self.c = None
 			self.behaviour = None
@@ -74,7 +73,7 @@ def get_requests(c):
 			ELEVATOR_REQUESTS[f][b] = c.fsm_get_e_request(c_int(f),c_int(b))
 	return ELEVATOR_REQUESTS
 
-def c_main(c_main_run_event, elevator_queue, local_orders_queue, print_lock):
+def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_queue, print_lock):
 	c = cdll.LoadLibrary('./single_elevator/pymain.so')
 
 	#print("Started")
@@ -134,5 +133,8 @@ def should_take_order(worldview_local_orders, elevator): #Needs a queue from mai
 			else:
 				pass
 	
+def hallorder_update(hall_order_pos_queue, floor, button):
+	order = [floor, button]
+	hall_order_pos_queue.put(order)
 
 #main()
