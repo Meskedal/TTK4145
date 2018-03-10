@@ -62,7 +62,7 @@ class Elevator:
 		self.floor = elevator_dict["floor"]
 		self.dirn = elevator_dict["dirn"]
 		self.requests = elevator_dict["requests"]
-		
+
 
 
 
@@ -79,8 +79,8 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 	#print("Started")
 	inputPollRate_ms = 25
 
-	c.elevator_hardware_init()  
-	
+	c.elevator_hardware_init()
+
 	if(c.elevator_hardware_get_floor_sensor_signal() == -1):
 		c.fsm_onInitBetweenFloors()
 	elevator = Elevator(c,True)
@@ -91,11 +91,14 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			for b in range (0, N_BUTTONS):
 				v = c.elevator_hardware_get_button_signal(b, f)
 				if(v  and  v != prev[f][b]):
-					c.fsm_onRequestButtonPress(f, b)
+					if(b != 2):
+						hallorder_update(hall_order_pos_queue,f,b)
+					else:
+						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
-				
+
 		f = c.elevator_hardware_get_floor_sensor_signal()
-		
+
 		if (f != -1 and f != prev):
 			c.fsm_onFloorArrival(f)
 		prev = f
@@ -105,6 +108,9 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			c.timer_stop()
 
 		elevator.update()
+		if(not local_orders_queue.empty()):
+			local_orders = local_orders_queue.get()
+			should_take_order(local_orders, elevator)
 		#print(elevator_to_dict(elevator))
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
@@ -132,7 +138,7 @@ def should_take_order(worldview_local_orders, elevator): #Needs a queue from mai
 				elevator.c.fsm_onRequestButtonPress(f, b)
 			else:
 				pass
-	
+
 def hallorder_update(hall_order_pos_queue, floor, button):
 	order = [floor, button]
 	hall_order_pos_queue.put(order)

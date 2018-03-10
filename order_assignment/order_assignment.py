@@ -6,7 +6,7 @@ __author__      = "gitgudd"
 from copy import deepcopy
 
 
-## Global variables ## 
+## Global variables ##
 
 N_FLOORS = 4
 N_BUTTONS = 3
@@ -15,40 +15,37 @@ EB_Idle = 0
 EB_DoorOpen = 1
 EB_Moving = 2
 
-D_up = 1                
+D_up = 1
 D_down = -1
 D_stop = 0
 
 TRAVEL_TIME = 3
-DOOR_OPEN_TIME = 3      
+DOOR_OPEN_TIME = 3
 
 
 ########################
-class worldview()
-
-
 
 def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
 	duration = 0
 	if elevator.behaviour == EB_Idle:
 		elevator_dirn = assignment_choose_direction(elevator)
-		if elevator_dirn == D_Stop:
+		if elevator_dirn == D_stop:
 			return duration
 	elif elevator.behaviour == EB_Moving:
 		duration += TRAVEL_TIME/2
 		elevator_copy.floor += elevator_copy.dirn
 	elif elevator_copy.behaviour == EB_DoorOpen:
 		duration -= DOOR_OPEN_TIME/2
-   
+
 	while True:
 		if assignment_should_stop(elevator_copy):
 			elevator = assignment_clear_at_current_floor(elevator, True)
 			duration += DOOR_OPEN_TIME
 			elevator.dirn = assignment_choose_direction(elevator);
-			if elevator.dirn == D_Stop
+			if elevator.dirn == D_stop:
 				return duration
-			
-		
+
+
 		elevator.floor += elevator.dirn;
 		duration += TRAVEL_TIME
 	return duration
@@ -68,7 +65,7 @@ def assignment_choose_direction(elevator):
 			return D_down
 		elif assignment_above(elevator):
 			return D_up
-		else: 
+		else:
 			return D_stop
 	else:
 		return D_stop
@@ -117,7 +114,3 @@ def assignment_clear_at_current_floor(elevator, simulate):
 	return elevator_new
 
 #hei
-
-
-
-
