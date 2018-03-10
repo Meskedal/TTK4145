@@ -45,10 +45,6 @@ def main():
 
 
 
-			while not hall_orders_pos_queue.empty():
-					#for i in range(0,len(hall_orders_pos_queue)):
-				order = hall_orders_pos_queue.get()
-				worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
 
 			if(not Peers_queue2.empty()):
 				item = Peers_queue2.get()
@@ -67,18 +63,23 @@ def main():
 				#print('foreign')
 				#print(worldview_foreign['hall_orders'])
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
-				worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
+				while not hall_orders_pos_queue.empty():
+						#for i in range(0,len(hall_orders_pos_queue)):
+					order = hall_orders_pos_queue.get()
+					#print order
+					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
+					worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
 				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
 				#print worldview['elevators'][network_local_ip()]['requests']
 
 			local_orders = worldview['elevators'][id]['requests']
 				#print(worldview)
-			print "local orders: "
-			print local_orders
-			print "elevator orders: "
-			print elevator[id]['requests']
-			print "worldview: "
-			print worldview['hall_orders']
+			#print "local orders: "
+			#print local_orders
+			#print "elevator orders: "
+			#print elevator[id]['requests']
+			#print "worldview: "
+			#print worldview['hall_orders']
 			if (local_orders_queue.empty()):
 				local_orders_queue.put(local_orders)
 			if (worldview_queue.empty()):
@@ -99,7 +100,9 @@ def main():
 
 
 def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
-
+	#print("main")
+	#print(worldview)
+	#print("foreign")
 	#print(worldview_foreign)
 	hall_orders = worldview['hall_orders']
 	hall_orders_foreign = worldview_foreign['hall_orders']

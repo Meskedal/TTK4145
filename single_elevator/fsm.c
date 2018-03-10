@@ -45,7 +45,6 @@ int get_a(){
     return 3;
 }
 
-
 void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     //printf("\n\n%s(%d, %s)\n", __FUNCTION__, btn_floor, elevio_button_toString(btn_type));
     //elevator_print(elevator);
@@ -80,7 +79,6 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     }
 
     setAllLights(elevator);
-
     //printf("\nNew state:\n");
     //elevator_print(elevator);
 }

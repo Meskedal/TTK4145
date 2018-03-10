@@ -86,6 +86,8 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 	elevator = Elevator(c,True)
 
 	while(c_main_run_event.is_set()):
+		#print("Before button loop")
+		#elevator.print_status()
 		prev = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
 		for f in range (0, N_FLOORS):
 			for b in range (0, N_BUTTONS):
@@ -99,8 +101,22 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 
 		f = c.elevator_hardware_get_floor_sensor_signal()
 		#elevator.print_status()
+		#print("Before Local orders Queue")
+		#elevator.print_status()
+		if(not local_orders_queue.empty()):
+
+			local_orders = local_orders_queue.get()
+			#print(local_orders)
+			should_take_order(local_orders, elevator)
+
+		f = c.elevator_hardware_get_floor_sensor_signal()
+		#print("Before floor arrival")
+		#elevator.print_status()
 		if (f != -1 and f != prev):
+			#print("status")
+			#elevator.print_status()
 			if(c.fsm_onFloorArrival(f)):
+				print 2
 				for b in range (0, N_BUTTONS-1):
 					hallorder_update(hall_order_pos_queue, f, b, 0)
 
@@ -111,7 +127,8 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			c.fsm_onDoorTimeout()
 			c.timer_stop()
 		elevator.update()
-
+		#print("elevator queue")
+		#elevator.print_status()
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
 		else:
@@ -119,10 +136,6 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			elevator_queue.put(elevator_to_dict(elevator))
 
 
-		if(not local_orders_queue.empty()):
-			local_orders = local_orders_queue.get()
-			#print(local_orders)
-			should_take_order(local_orders, elevator)
 		#print_lock.acquire()
 		#print(elevator_to_json(elevator))
 		#print_lock.release()
@@ -138,17 +151,22 @@ def elevator_to_dict(elevator):
 	return eks
 
 def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
+	#print("Worldview")
 	#print worldview_local_orders
+	#print("before")
 	#print elevator.requests
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
-			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] != worldview_local_orders[f][b]):
+			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
 				elevator.c.fsm_onRequestButtonPress(f, b)
 			else:
 				pass
+	#print("after")
+	#print elevator.requests
 
 def hallorder_update(hall_order_pos_queue, floor, button, status):
 	order = [floor, button, status]
+	print(order)
 	hall_order_pos_queue.put(order)
 
 #main()
