@@ -116,12 +116,13 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			#print("status")
 			#elevator.print_status()
 			if(c.fsm_onFloorArrival(f)):
-				print 2
 				for b in range (0, N_BUTTONS-1):
 					hallorder_update(hall_order_pos_queue, f, b, 0)
+			
 
 
 		prev = f
+
 
 		if(c.timer_timedOut()):
 			c.fsm_onDoorTimeout()
@@ -166,7 +167,6 @@ def should_take_order(worldview_local_orders, elevator): #Needs a queue from mai
 
 def hallorder_update(hall_order_pos_queue, floor, button, status):
 	order = [floor, button, status]
-	print(order)
 	hall_order_pos_queue.put(order)
 
 #main()

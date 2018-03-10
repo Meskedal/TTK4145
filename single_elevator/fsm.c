@@ -54,6 +54,10 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     case EB_DoorOpen:
         if(elevator.floor == btn_floor){
             timer_start(elevator.config.doorOpenDuration_s);
+            elevator.requests[btn_floor][btn_type] = 1;
+            elevator = requests_clearAtCurrentFloor(elevator);
+            setAllLights(elevator);
+
         } else {
             elevator.requests[btn_floor][btn_type] = 1;
         }
@@ -81,6 +85,7 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     setAllLights(elevator);
     //printf("\nNew state:\n");
     //elevator_print(elevator);
+
 }
 
 
@@ -107,13 +112,13 @@ int fsm_onFloorArrival(int newFloor){
         }
         return 0;
     default:
+
         return 0;
     }
 
     //printf("\nNew state:\n");
     //elevator_print(elevator);
 }
-
 
 
 
