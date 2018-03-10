@@ -39,13 +39,17 @@ def main():
 	while(go):
 		try:
 			elevator = elevator_queue.get()
-			for key in elevator:
-				worldview['elevators'][key] = elevator[key]
-				break
-			#print_lock.acquire()
-			#print(worldview)
-			#print_lock.release()
-			#sleep(2)
+			id = next(iter(elevator))
+			worldview['elevators'][id] = elevator[id]
+			#local_orders = worldview['elevators'][id]['requests']
+
+
+
+			while not hall_orders_pos_queue.empty():
+					#for i in range(0,len(hall_orders_pos_queue)):
+				order = hall_orders_pos_queue.get()
+				worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
+
 			if(not Peers_queue2.empty()):
 				item = Peers_queue2.get()
 				Peers[item[0]] = item[1]
@@ -58,15 +62,23 @@ def main():
 				#print(worldview_foreign[id_foreign])
 				worldview_foreign = worldview_foreign[id_foreign]
 				#print(worldview_foreign)
+				#print('mine')
+				#print(worldview['hall_orders'])
+				#print('foreign')
+				#print(worldview_foreign['hall_orders'])
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
+				worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
 				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
-				#print(worldview)
+				#print worldview['elevators'][network_local_ip()]['requests']
 
-			if not hall_orders_pos_queue.empty():
-				#for i in range(0,len(hall_orders_pos_queue)):
-				order = hall_orders_pos_queue.get()
-				worldview['hall_orders'][order[0]][order[1]] = [1, time()]
-			local_orders = worldview['elevators'][my_id]['requests']
+			local_orders = worldview['elevators'][id]['requests']
+				#print(worldview)
+			print "local orders: "
+			print local_orders
+			print "elevator orders: "
+			print elevator[id]['requests']
+			print "worldview: "
+			print worldview['hall_orders']
 			if (local_orders_queue.empty()):
 				local_orders_queue.put(local_orders)
 			if (worldview_queue.empty()):
@@ -85,8 +97,6 @@ def main():
 			print_lock.release()
 			go = False
 
-
-	return worldview
 
 def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 
@@ -123,13 +133,14 @@ def should_i_take_order(worldview, my_id, Peers):
 			if nontaken_order >= len(Peers):
 				my_elevator = Elevator(None, False)
 				my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
-				my_elevator.print_status()
+				#my_elevator.print_status()
 				my_duration = assignment_time_to_idle(my_elevator)
+
 				i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
-				for i in range(0, len(Peers)):
-					if(Peers[i] != my_id):
+				for id in Peers:
+					if(id != my_id):
 						other_elevator = Elevator(None, False)
-						other_elevator.worldview_to_elevator(worldview['elevators'][Peers[i]])
+						other_elevator.worldview_to_elevator(worldview['elevators'][id])
 						if(my_duration > time_to_idle(other_elevator)):
 							i_should_take = False #Another Elevator is faster
 							break

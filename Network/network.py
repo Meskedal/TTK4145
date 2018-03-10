@@ -101,9 +101,6 @@ def network_create_worldview(worldview_queue, print_lock): #Creates worldview di
 	while(worldview_queue.empty()):
 		sleep(0.02)
 		pass
-	#print_lock.acquire()
-	#print("sending")
-	#print_lock.release()
 		#sleep(0.02)
 		#print("waiting")
 	worldview = worldview_queue.get()

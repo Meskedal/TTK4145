@@ -92,31 +92,37 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				v = c.elevator_hardware_get_button_signal(b, f)
 				if(v  and  v != prev[f][b]):
 					if(b != 2):
-						hallorder_update(hall_order_pos_queue,f,b)
+						hallorder_update(hall_order_pos_queue,f,b, 1)
 					else:
 						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
 
 		f = c.elevator_hardware_get_floor_sensor_signal()
-
+		#elevator.print_status()
 		if (f != -1 and f != prev):
-			c.fsm_onFloorArrival(f)
+			if(c.fsm_onFloorArrival(f)):
+				for b in range (0, N_BUTTONS-1):
+					hallorder_update(hall_order_pos_queue, f, b, 0)
+
+
 		prev = f
 
 		if(c.timer_timedOut()):
 			c.fsm_onDoorTimeout()
 			c.timer_stop()
-
 		elevator.update()
-		if(not local_orders_queue.empty()):
-			local_orders = local_orders_queue.get()
-			should_take_order(local_orders, elevator)
-		#print(elevator_to_dict(elevator))
+
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
 		else:
 			elevator_queue.get() #may get concurrency erros, maybe use task done/join
 			elevator_queue.put(elevator_to_dict(elevator))
+
+
+		if(not local_orders_queue.empty()):
+			local_orders = local_orders_queue.get()
+			#print(local_orders)
+			should_take_order(local_orders, elevator)
 		#print_lock.acquire()
 		#print(elevator_to_json(elevator))
 		#print_lock.release()
@@ -132,15 +138,17 @@ def elevator_to_dict(elevator):
 	return eks
 
 def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
+	#print worldview_local_orders
+	#print elevator.requests
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
-			if(worldview_local_orders == 1 and elevator.requests[f][b] != worldview_local_orders[f][b]):
+			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] != worldview_local_orders[f][b]):
 				elevator.c.fsm_onRequestButtonPress(f, b)
 			else:
 				pass
 
-def hallorder_update(hall_order_pos_queue, floor, button):
-	order = [floor, button]
+def hallorder_update(hall_order_pos_queue, floor, button, status):
+	order = [floor, button, status]
 	hall_order_pos_queue.put(order)
 
 #main()
