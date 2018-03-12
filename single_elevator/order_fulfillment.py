@@ -86,8 +86,6 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 	elevator = Elevator(c,True)
 
 	while(c_main_run_event.is_set()):
-		#print("Before button loop")
-		#elevator.print_status()
 		prev = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
 		for f in range (0, N_FLOORS):
 			for b in range (0, N_BUTTONS):
@@ -95,49 +93,23 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				if(v  and  v != prev[f][b]):
 					if(b != 2):
 						hallorder_update(hall_order_pos_queue,f,b, 1)
-						#print("floor")
-						#print(f)
-						#print("button")
-						#print(b)
-
 					else:
 						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
 
 		f = c.elevator_hardware_get_floor_sensor_signal()
-		#elevator.print_status()
-		#elevator.update()
-		#print("Before Local orders Queue")
-		#elevator.print_status()
-		if (f != -1 and f != prev):
 
-			#elevator.print_status()
+		if (f != -1 and f != prev):
 			if(c.fsm_onFloorArrival(f)):
-				#print("hei")
 				for b in range (0, N_BUTTONS-1):
-					#print("floor")
-					#print(f)
-					#print("button")
-					#print(b)
 					hallorder_update(hall_order_pos_queue, f, b, 0)
 
 
 		if(not local_orders_queue.empty()):
 			local_orders = local_orders_queue.get()
-			#print(local_orders)
+
 			should_take_order(local_orders, elevator)
-
-
-		f = c.elevator_hardware_get_floor_sensor_signal()
-		#print("after local orders")
-		#elevator.print_status()
-		#elevator.update()
-		#elevator.print_status()
-		#print(f!=prev)
-
-
-
-
+			
 		prev = f
 
 
@@ -145,18 +117,13 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			c.fsm_onDoorTimeout()
 			c.timer_stop()
 		elevator.update()
-		#print("elevator queue")
-		#elevator.print_status()
+
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
 		else:
 			elevator_queue.get() #may get concurrency erros, maybe use task done/join
 			elevator_queue.put(elevator_to_dict(elevator))
 
-
-		#print_lock.acquire()
-		#print(elevator_to_json(elevator))
-		#print_lock.release()
 		c.usleep(inputPollRate_ms*1000)
 
 def elevator_to_dict(elevator):
