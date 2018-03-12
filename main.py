@@ -1,22 +1,57 @@
 #!/usr/bin/env python
 
 __author__      = "gitgudd"
-
 #sys.path.insert(0, '/home/student/Desktop/TTK4145/single_elevator')
 from single_elevator.order_fulfillment import *
 #from order_assignment.order_assignment import *
 #sys.path.insert(0, '/home/student/Desktop/TTK4145/Network')
 from Network.network import *
 from order_assignment.order_assignment import*
+import subprocess
 #sys.path.insert(0, '/home/student/Desktop/TTK4145')
 #import order_assignment.order_assignment.py
+import argparse as ap
+import getpass as gp
 
+#Get sender_email and recipient_email as arguments to the program
+def init():
+	parser = ap.ArgumentParser(description='Port for simulation')
+	parser.add_argument('-p', '--port', dest='sim_port', required=False, metavar='<port_number>')
+	args = parser.parse_args()
+	port_number = args.sim_port #Sender's email address
+	if port_number:
+		with open('elevatorHW/elevator_hardware.con', 'r') as file:
+			print(port_number)
+			data = file.readlines()
+
+# now change the 2nd line, note that you have to add a newline
+		data[3] = "--com_port              " + port_number
+
+		# and write everything back
+		with open('elevatorHW/elevator_hardware.con', 'w') as file:
+		    file.writelines(data)
+		#subprocess.call(['cd', 'elevatorHW'])
+		#subprocess.call(['./' , 'SimElevatorServer'])
+	else:
+		with open('elevatorHW/elevator_hardware.con', 'r') as file:
+			print(port_number)
+			data = file.readlines()
+
+# now change the 2nd line, note that you have to add a newline
+		data[3] = "--com_port              " + '15657'
+
+		# and write everything back
+		with open('elevatorHW/elevator_hardware.con', 'w') as file:
+		    file.writelines(data)
 
 def main():
+	init()
+
+
 	worldview = {}
 	worldview['hall_orders'] = [[[0,0] for x in range(0,N_BUTTONS-1)] for y in range(0,N_FLOORS)]
 	worldview['elevators'] = {}
-#	print(worldview)
+	#print(worldview)
 	worldview_foreign = {}
 	worldview_queue = Queue.Queue()
 	elevator_queue = Queue.Queue()
@@ -26,6 +61,7 @@ def main():
 	hall_orders_pos_queue = Queue.Queue()
 	Peers = {}
 	my_id = network_local_ip()
+	#print(os.getpid())
 
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
@@ -40,6 +76,7 @@ def main():
 		try:
 			elevator = elevator_queue.get()
 			id = next(iter(elevator))
+			#print(id)
 			worldview['elevators'][id] = elevator[id]
 			#local_orders = worldview['elevators'][id]['requests']
 
@@ -55,6 +92,7 @@ def main():
 				#print(worldview_foreign)
 				#print_lock.release()
 				id_foreign = next(iter(worldview_foreign))
+				print(id_foreign)
 				#print(worldview_foreign[id_foreign])
 				worldview_foreign = worldview_foreign[id_foreign]
 				#print(worldview_foreign)
@@ -118,7 +156,8 @@ def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 						hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
 					else:
 						pass
-
+	#print(id_foreign)
+	#print(worldview)
 	worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
 	worldview['hall_orders'] = hall_orders
 	return worldview
@@ -148,7 +187,7 @@ def should_i_take_order(worldview, my_id, Peers):
 					if(id != my_id):
 						other_elevator = Elevator(None, False)
 						other_elevator.worldview_to_elevator(worldview['elevators'][id])
-						if(my_duration > time_to_idle(other_elevator)):
+						if(my_duration > assignment_time_to_idle(other_elevator)):
 							i_should_take = False #Another Elevator is faster
 							break
 						else:

@@ -4,7 +4,6 @@
 __author__      = "gitgudd"
 
 from copy import deepcopy, copy
-import sys
 
 ## Global variables ##
 

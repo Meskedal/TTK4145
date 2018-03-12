@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import threading, thread, Queue, socket, errno, json
 from time import sleep, time
+import os
 
 
 class Thread(threading.Thread):
@@ -116,4 +117,4 @@ def network_local_ip():
 	s.connect(("8.8.8.8", 80))
 	ip = s.getsockname()[0]
 	s.close()
-	return ip
+	return ip + ':' + repr(os.getpid())

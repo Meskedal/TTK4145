@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import threading, thread, Queue, socket, errno, json
 from time import sleep, time
+import os
+#from ..Network.network import *
 
 
 class Thread(threading.Thread):
@@ -61,7 +63,10 @@ def network_broadcast_heartbeat(broadcastEvent, worldview_queue, print_lock):#Br
 
 		worldview = json.dumps(worldview)
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		sock.sendto(worldview, (target_ip, target_port))
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+		#s.sendto(data, ('<broadcast>', MYPORT))
+		sock.sendto(worldview, ('<broadcast>', target_port))
 
 		#print_lock.acquire()
 		#print("sent")
@@ -71,10 +76,11 @@ def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_fore
 													  #id:worldview is also passed to worldview_foreign_queue
 	while(receiveEvent.isSet()):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.settimeout(timeout)
 
 		try:
-			sock.bind(('127.0.0.1', 20002))
+			sock.bind(('<broadcast>', 20002))
 		except:
 			print 'failure to bind'
 			sock.close()
@@ -121,4 +127,5 @@ def network_local_ip():
 	s.connect(("8.8.8.8", 80))
 	ip = s.getsockname()[0]
 	s.close()
-	return ip
+	#print(os.getpid())
+	return ip + ':' +  repr(os.getpid())
