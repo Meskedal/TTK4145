@@ -55,22 +55,14 @@ def network_broadcast_heartbeat(broadcastEvent, worldview_queue, print_lock):#Br
 	target_ip = '127.0.0.1'
 	target_port = 20002
 	while(broadcastEvent.isSet()):
+
 		worldview = network_create_worldview(worldview_queue, print_lock)
-
-		#print_lock.acquire()
-		#print(worldview)
-		#print_lock.release()
-
 		worldview = json.dumps(worldview)
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		#s.sendto(data, ('<broadcast>', MYPORT))
 		sock.sendto(worldview, ('<broadcast>', target_port))
-
-		#print_lock.acquire()
-		#print("sent")
-		#print_lock.release()
 
 def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_foreign_queue, print_lock): #Receives worldview from id and passes id with timestamp to peers_queue.
 													  #id:worldview is also passed to worldview_foreign_queue
@@ -89,9 +81,6 @@ def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_fore
 			data, addr = sock.recvfrom(1024)
 			worldview_foreign = json.loads(data)
 			id_foreign = next(iter(worldview_foreign))
-		#	print_lock.acquire()
-		#	print(worldview_foreign_dict)
-		#	print_lock.release()
 			timestamp = time()
 			peer_entry = [id_foreign, timestamp]
 			if (receiveEvent.isSet()):
@@ -106,9 +95,7 @@ def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_fore
 def network_create_worldview(worldview_queue, print_lock): #Creates worldview dictionary with ip as key
 	while(worldview_queue.empty()):
 		sleep(0.02)
-		pass
-		#sleep(0.02)
-		#print("waiting")
+
 	worldview = worldview_queue.get()
 	try:
 		ip = network_local_ip()
