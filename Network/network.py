@@ -46,16 +46,16 @@ def network_heartbeat(heartbeatEvent, worldview_queue, worldview_foreign_queue, 
 	receive.join()
 	broadcast.join()
 
-	print_lock.acquire()
-	print_peers(Peers)
-	print_lock.release()
+	#print_lock.acquire()
+	#print_peers(Peers)
+	#print_lock.release()
 
 #heartbeat()
 def network_broadcast_heartbeat(broadcastEvent, worldview_queue, print_lock):#Broadcasts the JSON formatted worldview of the local id.
 	target_ip = '127.0.0.1'
 	target_port = 20002
 	while(broadcastEvent.isSet()):
-
+		sleep(0.2)
 		worldview = network_create_worldview(worldview_queue, print_lock)
 		worldview = json.dumps(worldview)
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -74,8 +74,12 @@ def main():
 		try:
 			elevator = elevator_queue.get()
 			id = next(iter(elevator))
-			#print(id)
 			worldview['elevators'][id] = elevator[id]
+			#my_elevator = Elevator(None, False)
+			#my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
+			#my_duration = assignment_time_to_idle(my_elevator)
+		#	print " "
+			#print my_duration
 
 			if(not Peers_queue2.empty()):
 				item = Peers_queue2.get()
@@ -83,7 +87,9 @@ def main():
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
-				pp.pprint(worldview_foreign)
+				#cc = json.dumps(worldview_foreign)
+				#print(worldview_foreign)
+				#print(" ")
 
 				id_foreign = next(iter(worldview_foreign))
 				worldview_foreign = worldview_foreign[id_foreign]
@@ -121,12 +127,12 @@ def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 	hall_orders_foreign = worldview_foreign['hall_orders']
 	for f in range (0, N_FLOORS):
 			for b in range (0, N_BUTTONS-1):
-				if hall_orders[f][b][0] != hall_orders_foreign[f][b][0]:
-					if hall_orders[f][b][1] < hall_orders_foreign[f][b][1]:
-						hall_orders[f][b][0] = hall_orders_foreign[f][b][0]
-						hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
-					else:
-						pass
+				#if hall_orders[f][b][0] != hall_orders_foreign[f][b][0]:
+				if hall_orders[f][b][1] < hall_orders_foreign[f][b][1]:
+					hall_orders[f][b][0] = hall_orders_foreign[f][b][0]
+					hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
+				else:
+					pass
 	#print(id_foreign)
 	#print(worldview)
 	worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
@@ -152,12 +158,16 @@ def should_i_take_order(worldview, my_id, Peers):
 				my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
 				my_duration = assignment_time_to_idle(my_elevator)
 
+				print("my duration: " + repr(my_duration))
+
 				i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
 				for id in Peers:
 					if(id != my_id):
 						other_elevator = Elevator(None, False)
 						other_elevator.worldview_to_elevator(worldview['elevators'][id])
-						if(my_duration > assignment_time_to_idle(other_elevator)):
+						other_duration = assignment_time_to_idle(other_elevator)
+						print("other duration: " + repr(other_duration))
+						if(my_duration > other_duration):
 							i_should_take = False #Another Elevator is faster
 							break
 						else:
@@ -166,6 +176,7 @@ def should_i_take_order(worldview, my_id, Peers):
 						pass
 				if(i_should_take):
 					worldview['elevators'][my_id]['requests'][f][b] = 1
+					print("took order")
 				else:
 					pass #Check next button
 			else:
