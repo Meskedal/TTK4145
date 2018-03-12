@@ -66,13 +66,17 @@ def main():
 				while not hall_orders_pos_queue.empty():
 						#for i in range(0,len(hall_orders_pos_queue)):
 					order = hall_orders_pos_queue.get()
-					print order
+					#print order
 					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
 					worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
+				#print("before")
+				#print worldview['elevators'][network_local_ip()]['requests']
 				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
+				#print("afeter")
 				#print worldview['elevators'][network_local_ip()]['requests']
 
 			local_orders = worldview['elevators'][id]['requests']
+			#print(local_orders)
 
 			#print "elevator orders: "
 			#print elevator[id]['requests']

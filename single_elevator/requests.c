@@ -61,17 +61,6 @@ int requests_shouldStop(Elevator e){
 Elevator requests_clearAtCurrentFloor(Elevator e){
     for(Button btn = 0; btn < N_BUTTONS; btn++){
          e.requests[e.floor][btn] = 0;
-    }   
+    }
     return e;
 }
-
-
-
-
-
-
-
-
-
-
-

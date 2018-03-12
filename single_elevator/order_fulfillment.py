@@ -95,30 +95,47 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				if(v  and  v != prev[f][b]):
 					if(b != 2):
 						hallorder_update(hall_order_pos_queue,f,b, 1)
+						#print("floor")
+						#print(f)
+						#print("button")
+						#print(b)
+
 					else:
 						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
 
 		f = c.elevator_hardware_get_floor_sensor_signal()
 		#elevator.print_status()
+		#elevator.update()
 		#print("Before Local orders Queue")
 		#elevator.print_status()
-		if(not local_orders_queue.empty()):
+		if (f != -1 and f != prev):
 
+			#elevator.print_status()
+			if(c.fsm_onFloorArrival(f)):
+				#print("hei")
+				for b in range (0, N_BUTTONS-1):
+					#print("floor")
+					#print(f)
+					#print("button")
+					#print(b)
+					hallorder_update(hall_order_pos_queue, f, b, 0)
+
+
+		if(not local_orders_queue.empty()):
 			local_orders = local_orders_queue.get()
 			#print(local_orders)
 			should_take_order(local_orders, elevator)
 
+
 		f = c.elevator_hardware_get_floor_sensor_signal()
-		#print("Before floor arrival")
+		#print("after local orders")
 		#elevator.print_status()
-		if (f != -1 and f != prev):
-			#print("status")
-			#elevator.print_status()
-			if(c.fsm_onFloorArrival(f)):
-				for b in range (0, N_BUTTONS-1):
-					hallorder_update(hall_order_pos_queue, f, b, 0)
-			
+		#elevator.update()
+		#elevator.print_status()
+		#print(f!=prev)
+
+
 
 
 		prev = f
@@ -152,14 +169,15 @@ def elevator_to_dict(elevator):
 	return eks
 
 def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
-	#print("Worldview")
-	#print worldview_local_orders
-	#print("before")
-	#print elevator.requests
+	print("Worldview")
+	print worldview_local_orders
+	print("Elevator")
+	print elevator.requests
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
 			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
 				elevator.c.fsm_onRequestButtonPress(f, b)
+				print("order eceiv3ed")
 			else:
 				pass
 	#print("after")
