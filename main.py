@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 __author__      = "gitgudd"
+import pprint
 
 from single_elevator.order_fulfillment import *
 from Network.network import *
@@ -44,6 +45,7 @@ def init():
 
 def main():
 	init()
+	pp = pprint.PrettyPrinter(indent=4)
 
 
 	worldview = {}
@@ -81,6 +83,8 @@ def main():
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
+				pp.pprint(worldview_foreign)
+
 				id_foreign = next(iter(worldview_foreign))
 				worldview_foreign = worldview_foreign[id_foreign]
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
