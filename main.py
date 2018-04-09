@@ -82,8 +82,7 @@ def main():
 			#print my_duration
 
 			if(not Peers_queue2.empty()):
-				item = Peers_queue2.get()
-				Peers[item[0]] = item[1]
+				Peers = Peers_queue2.get()
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
