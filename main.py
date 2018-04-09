@@ -97,7 +97,8 @@ def main():
 				while not hall_orders_pos_queue.empty():
 					order = hall_orders_pos_queue.get()
 					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
-					worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
+					if order[2] == 0:
+						worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
 
 				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
 
