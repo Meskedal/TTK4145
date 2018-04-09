@@ -31,15 +31,16 @@ def network_heartbeat(heartbeatEvent, worldview_queue, worldview_foreign_queue, 
 		current_time = time()
 		if not peers_queue.empty():
 			item = peers_queue.get()
-			peers_queue2.put(item)
 			peers[item[0]] = item[1]
 			if item[0] in lost:
 				del lost[item[0]]
+			peers_queue2.put(peers)
 
 		for ip in peers:
-			if(peers[ip] < current_time - 15): #Hearbeat timeout time
+			if(peers[ip] < current_time - 1): #Hearbeat timeout time
 				lost[ip] = current_time
 				del peers[ip]
+				break
 
 	receiveEvent.clear()
 	broadcastEvent.clear()
