@@ -39,7 +39,7 @@ def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator
 	elif elevator_copy.behaviour == EB_DoorOpen:
 		duration -= DOOR_OPEN_TIME/2
 	while True:
-		if assignment_should_stop(elevator):
+		if assignment_should_stop(elevator_copy):
 			elevator_copy = assignment_clear_at_current_floor(elevator_copy, True)
 			duration += DOOR_OPEN_TIME
 			elevator_copy.dirn = assignment_choose_direction(elevator_copy);
@@ -71,6 +71,7 @@ def assignment_choose_direction(elevator):
 		return D_stop
 
 
+
 def assignment_above(elevator): # Returns boolean
 
 	for f in range(elevator.floor+1, N_FLOORS):
@@ -87,13 +88,15 @@ def assignment_below(elevator): # Returns boolean
 	return False
 
 def assignment_should_stop(elevator): # Returns boolean
+	print "dirn: " + repr(elevator.dirn)
+	print "floor: " + repr(elevator.floor)
 	if elevator.dirn == D_down:
 		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_below(elevator):
 			return True
 		else:
 			return False
 	elif elevator.dirn == D_up:
-		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_above(elevator):
+		if elevator.requests[elevator.floor][B_HallUp] or elevator.requests[elevator.floor][B_Cab] or not assignment_above(elevator):
 			return True
 		else:
 			return False

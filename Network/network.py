@@ -62,7 +62,6 @@ def network_broadcast_heartbeat(broadcastEvent, worldview_queue, print_lock):#Br
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-		#s.sendto(data, ('<broadcast>', MYPORT))
 		sock.sendto(worldview, ('<broadcast>', target_port))
 
 def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_foreign_queue, print_lock): #Receives worldview from id and passes id with timestamp to peers_queue.
@@ -70,7 +69,7 @@ def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_fore
 	while(receiveEvent.isSet()):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		sock.settimeout(timeout)
+		sock.settimeout(1)
 
 		try:
 			sock.bind(('<broadcast>', 20002))
@@ -86,8 +85,8 @@ def network_receive_heartbeat(peers_queue, timeout, receiveEvent, worldview_fore
 			peer_entry = [id_foreign, timestamp]
 			if (receiveEvent.isSet()):
 				peers_queue.put(peer_entry)
-
 				worldview_foreign_queue.put(worldview_foreign)
+
 		except socket.timeout as e:
 			print_lock.acquire()
 			print(e)

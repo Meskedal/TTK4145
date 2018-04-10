@@ -137,10 +137,6 @@ def elevator_to_dict(elevator):
 	return eks
 
 def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
-	#print("Worldview")
-	#print worldview_local_orders
-	#print("Elevator")
-	#print elevator.requests
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
 			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):

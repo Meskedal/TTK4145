@@ -19,7 +19,7 @@ def init():
 	args = parser.parse_args()
 	port_number = args.sim_port #Sender's email address
 	if port_number:
-		with open('elevatorHW/elevator_hardware.con', 'r') as file:
+		with open('single_elevator/elevator_hardware.con', 'r') as file:
 			print(port_number)
 			data = file.readlines()
 
@@ -27,12 +27,12 @@ def init():
 		data[3] = "--com_port              " + port_number
 
 		# and write everything back
-		with open('elevatorHW/elevator_hardware.con', 'w') as file:
+		with open('single_elevator/elevator_hardware.con', 'w') as file:
 		    file.writelines(data)
 		#subprocess.call(['cd', 'elevatorHW'])
 		#subprocess.call(['./' , 'SimElevatorServer'])
 	else:
-		with open('elevatorHW/elevator_hardware.con', 'r') as file:
+		with open('single_elevator/elevator_hardware.con', 'r') as file:
 			print(port_number)
 			data = file.readlines()
 
@@ -40,7 +40,7 @@ def init():
 		data[3] = "--com_port              " + '15657'
 
 		# and write everything back
-		with open('elevatorHW/elevator_hardware.con', 'w') as file:
+		with open('single_elevator/elevator_hardware.con', 'w') as file:
 		    file.writelines(data)
 
 def main():
@@ -60,8 +60,6 @@ def main():
 	hall_orders_pos_queue = Queue.Queue()
 	Peers = {}
 	my_id = network_local_ip()
-	#print(os.getpid())
-
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
 	c_main_run_event = threading.Event()
@@ -70,25 +68,18 @@ def main():
 	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
 	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
 	go = True
+
 	while(go):
 		try:
 			elevator = elevator_queue.get()
 			id = next(iter(elevator))
 			worldview['elevators'][id] = elevator[id]
-			#my_elevator = Elevator(None, False)
-			#my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
-			#my_duration = assignment_time_to_idle(my_elevator)
-		#	print " "
-			#print my_duration
 
 			if(not Peers_queue2.empty()):
 				Peers = Peers_queue2.get()
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
-				#cc = json.dumps(worldview_foreign)
-				#print(worldview_foreign)
-				#print(" ")
 
 				id_foreign = next(iter(worldview_foreign))
 				worldview_foreign = worldview_foreign[id_foreign]
@@ -100,7 +91,8 @@ def main():
 					if order[2] == 0:
 						worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
 
-				worldview = should_i_take_order(worldview, network_local_ip(), Peers)
+
+				worldview = should_i_take_order(worldview, network_local_ip(), Peers) #INF LOOP
 
 			local_orders = worldview['elevators'][id]['requests']
 
@@ -123,6 +115,7 @@ def main():
 			go = False
 
 def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
+	worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
 	hall_orders = worldview['hall_orders']
 	hall_orders_foreign = worldview_foreign['hall_orders']
 	for f in range (0, N_FLOORS):
@@ -133,9 +126,7 @@ def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 					hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
 				else:
 					pass
-	#print(id_foreign)
-	#print(worldview)
-	worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
+
 	worldview['hall_orders'] = hall_orders
 	return worldview
 
@@ -147,20 +138,23 @@ def should_i_take_order(worldview, my_id, Peers):
 			nontaken_order = 0 #Number of elevators that does not have the order
 			for id in Peers:
 				local_orders = worldview['elevators'][id]['requests']
-				if(hall_orders[f][b][0] == local_orders[f][b]):#must do this for all peers before calculating time
-					break
-				else:
+				if(hall_orders[f][b][0] and not local_orders[f][b]):#must do this for all peers before calculating time
 					nontaken_order += 1
 					pass
+				else:
+					break
 
 			if nontaken_order >= len(Peers):
+
 				my_elevator = Elevator(None, False)
 				my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
 				my_duration = assignment_time_to_idle(my_elevator)
 
+
 				print("my duration: " + repr(my_duration))
 
 				i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
+
 				for id in Peers:
 					if(id != my_id):
 						other_elevator = Elevator(None, False)
@@ -182,6 +176,7 @@ def should_i_take_order(worldview, my_id, Peers):
 			else:
 				pass #A Elevator has the order
 	return worldview
+
 def worldview_from_local_elevator(worldview, local_orders_elevator):
 	my_ip = network_local_ip()
 	local_orders = worldview['elevators'][my_ip]['requests']
