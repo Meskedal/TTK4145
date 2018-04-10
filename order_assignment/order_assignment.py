@@ -25,6 +25,90 @@ D_stop = 0
 TRAVEL_TIME = 3
 DOOR_OPEN_TIME = 3
 
+class Assigner:
+	def __init__(self, elevator):
+		self.elevator = deepcopy(elevator)
+
+	def time_to_idle(self):
+		duration = 0
+		if self.elevator.behaviour == EB_Idle:
+			elevator_dirn = self.choose_direction()
+			if elevator_dirn == D_stop:
+				return duration
+		elif self.elevator.behaviour == EB_Moving:
+			duration += TRAVEL_TIME/2
+			self.elevator.floor += self.elevator.dirn
+		elif self.elevator.behaviour == EB_DoorOpen:
+			duration -= DOOR_OPEN_TIME/2
+		while True:
+			if self.should_stop():
+				self.clear_at_current_floor()
+				duration += DOOR_OPEN_TIME
+				self.elevator.dirn = self.choose_direction();
+				if self.elevator.dirn == D_stop:
+					return duration
+
+			self.elevator.floor += self.elevator.dirn;
+			duration += TRAVEL_TIME
+		return duration
+
+	def choose_direction(self):
+
+		if self.elevator.dirn == D_up:
+			if self.assignment_above():
+				return D_up
+			elif self.assignment_below():
+				return D_down
+			else:
+				return D_stop
+		elif self.elevator.dirn == D_stop:
+			if self.assignment_below():
+				return D_down
+			elif self.assignment_above():
+				return D_up
+			else:
+				return D_stop
+		else:
+			return D_stop
+
+	def assignment_above(self): # Returns boolean
+
+		for floor in range(self.elevator.floor+1, N_FLOORS):
+			for button in range(0,N_BUTTONS):
+				if self.elevator.requests[floor][button]:
+					return True
+		return False
+
+	def assignment_below(self): # Returns boolean
+		for floor in range(0, self.elevator.floor):
+			for button in range(0,N_BUTTONS):
+				if self.elevator.requests[floot][button]:
+					return True
+		return False
+
+	def should_stop(self): # Returns boolean
+
+		if self.elevator.dirn == D_down:
+			if self.elevator.requests[self.elevator.floor][B_HallDown] or self.elevator.requests[self.elevator.floor][B_Cab] or not self.assignment_below():
+				return True
+			else:
+				return False
+		elif self.elevator.dirn == D_up:
+			if self.elevator.requests[self.elevator.floor][B_HallUp] or self.elevator.requests[self.elevator.floor][B_Cab] or not self.assignment_above():
+				return True
+			else:
+				return False
+		else:
+			return True
+
+
+	def clear_at_current_floor(self):
+		for btn in range(0,N_BUTTONS):
+			if self.elevator.requests[self.elevator.floor][button] == 1:
+				self.elevator.requests[self.elevator.floor][button] = 0
+
+
+
 ########################
 def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
 	duration = 0
