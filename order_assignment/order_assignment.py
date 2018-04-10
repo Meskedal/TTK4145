@@ -27,7 +27,7 @@ DOOR_OPEN_TIME = 3
 
 class Assigner:
 	def __init__(self, elevator):
-		self.my_elevator = deepcopy(elevator)
+		self.elevator = deepcopy(elevator)
 
 	def time_to_idle(self):
 		duration = 0
