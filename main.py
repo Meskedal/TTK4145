@@ -65,7 +65,7 @@ def main():
 	c_main_run_event = threading.Event()
 	heartbeat_run_event.set()
 	c_main_run_event.set()
-	heartbeat = Thread(network_heartbeat, heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
+	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
 	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
 	go = True
 
@@ -158,7 +158,7 @@ def should_i_take_order(worldview, my_id, Peers):
 				my_duration = assignment_time_to_idle(my_elevator)
 
 
-				print("my duration: " + repr(my_duration))
+				#print("my duration: " + repr(my_duration))
 
 				i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
 				for id in Peers:

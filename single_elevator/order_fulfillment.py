@@ -142,8 +142,8 @@ def should_take_order(worldview_local_orders, elevator): #Needs a queue from mai
 		for b in range (0, N_BUTTONS-1):
 			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
 				elevator.c.fsm_onRequestButtonPress(f, b)
-			elif(worldview_local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
-				elevator.c.fsm_clear_floor(f)
+			#elif(worldview_local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
+				#elevator.c.fsm_clear_floor(f)
 				#print("order eceiv3ed")
 			else:
 				pass
