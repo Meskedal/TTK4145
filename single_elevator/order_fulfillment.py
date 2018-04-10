@@ -99,7 +99,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				prev[f][b] = v
 
 		f = c.elevator_hardware_get_floor_sensor_signal()
-
+		#print(elevator.floor)
 		if (f != -1 and f != prev):
 			if(c.fsm_onFloorArrival(f)):
 				for b in range (0, N_BUTTONS-1):
@@ -126,6 +126,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 			elevator_queue.put(elevator_to_dict(elevator))
 
 		c.usleep(inputPollRate_ms*1000)
+		#print(elevator.floor)
 
 def elevator_to_dict(elevator):
 	eks = {}
@@ -142,8 +143,8 @@ def should_take_order(worldview_local_orders, elevator): #Needs a queue from mai
 		for b in range (0, N_BUTTONS-1):
 			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
 				elevator.c.fsm_onRequestButtonPress(f, b)
-			#elif(worldview_local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
-				#elevator.c.fsm_clear_floor(f)
+			elif(worldview_local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
+				elevator.c.fsm_clear_floor(f)
 				#print("order eceiv3ed")
 			else:
 				pass

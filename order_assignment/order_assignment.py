@@ -82,7 +82,7 @@ class Assigner:
 	def assignment_below(self): # Returns boolean
 		for floor in range(0, self.elevator.floor):
 			for button in range(0,N_BUTTONS):
-				if self.elevator.requests[floot][button]:
+				if self.elevator.requests[floor][button]:
 					return True
 		return False
 
@@ -103,7 +103,7 @@ class Assigner:
 
 
 	def clear_at_current_floor(self):
-		for btn in range(0,N_BUTTONS):
+		for button in range(0,N_BUTTONS):
 			if self.elevator.requests[self.elevator.floor][button] == 1:
 				self.elevator.requests[self.elevator.floor][button] = 0
 
@@ -183,17 +183,25 @@ def assignment_below(elevator): # Returns boolean
 def assignment_should_stop(elevator): # Returns boolean
 	#print "dirn: " + repr(elevator.dirn)
 	#print "floor: " + repr(elevator.floor)
+	#print (elevator.dirn)
+	#print(elevator.floor)
+	#print(elevator.requests)
 	if elevator.dirn == D_down:
 		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_below(elevator):
+			#print("case 1")
+			#print(elevator.floor)
+			#print(elevator.requests)
 			return True
 		else:
 			return False
 	elif elevator.dirn == D_up:
 		if elevator.requests[elevator.floor][B_HallUp] or elevator.requests[elevator.floor][B_Cab] or not assignment_above(elevator):
+			#print("case 2")
 			return True
 		else:
 			return False
 	else:
+		#print("3")
 		return True
 
 

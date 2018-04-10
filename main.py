@@ -155,7 +155,10 @@ def should_i_take_order(worldview, my_id, Peers):
 
 				my_elevator = Elevator(None, False)
 				my_elevator.worldview_to_elevator(worldview['elevators'][my_id])
-				my_duration = Assigner.time_to_idle(my_elevator)
+				#print(my_elevator.floor)
+				assign_elev = Assigner(my_elevator)
+				my_duration = assign_elev.time_to_idle()
+				#print(my_elevator.floor)
 
 
 				#print("my duration: " + repr(my_duration))
@@ -165,8 +168,9 @@ def should_i_take_order(worldview, my_id, Peers):
 					if(id != my_id):
 						other_elevator = Elevator(None, False)
 						other_elevator.worldview_to_elevator(worldview['elevators'][id])
-						other_duration = Assigner.time_to_idle(other_elevator)
-						if(my_duration > other_duration):
+						assign_elev2 = Assigner(other_elevator)
+						other_duration = assign_elev2.time_to_idle()
+						if(my_duration > other_duration):a
 							i_should_take = False #Another Elevator is faster
 							break
 						elif my_duration == other_duration:
