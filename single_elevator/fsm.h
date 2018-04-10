@@ -12,3 +12,4 @@ int fsm_get_e_dirn(void);
 int fsm_get_e_behaviour(void);
 int fsm_get_e_request(int floor, int btn);
 int fsm_set_e_request(int value, int floor, int btn);
+void fsm_clear_floor(int floor);

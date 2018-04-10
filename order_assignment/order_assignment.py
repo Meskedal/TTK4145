@@ -50,6 +50,15 @@ def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator
 		duration += TRAVEL_TIME
 	return duration
 
+def assignment_distance_to_order(elevator):
+	distance = 0
+	for f in range(0, N_FLOORS):
+		for btn in range(0,N_BUTTONS):
+			if elevator.requests[f][btn]:
+				distance = abs(elevator.floor - f)
+	return distance
+
+
 
 def assignment_choose_direction(elevator):
 
@@ -88,8 +97,8 @@ def assignment_below(elevator): # Returns boolean
 	return False
 
 def assignment_should_stop(elevator): # Returns boolean
-	print "dirn: " + repr(elevator.dirn)
-	print "floor: " + repr(elevator.floor)
+	#print "dirn: " + repr(elevator.dirn)
+	#print "floor: " + repr(elevator.floor)
 	if elevator.dirn == D_down:
 		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_below(elevator):
 			return True

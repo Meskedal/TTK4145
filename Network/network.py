@@ -10,6 +10,15 @@ class Thread(threading.Thread):
 		threading.Thread.__init__(self, target=t, args=args)
 		self.daemon = True
 		self.start()
+class Network:
+	def __init__(self, heartbeatEvent, worldview_queue, worldview_foreign_queue, peers_queue2, print_lock):
+
+		self.peers = {}
+		self.lost = {}
+
+	#def network_heartbeat
+
+
 
 def print_peers(Peers):
 	for ip in Peers:

@@ -88,11 +88,16 @@ def main():
 				while not hall_orders_pos_queue.empty():
 					order = hall_orders_pos_queue.get()
 					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
+					#print ("beffore :")
+					#print worldview['hall_orders']
 					if order[2] == 0:
 						worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
 
 
 				worldview = should_i_take_order(worldview, network_local_ip(), Peers) #INF LOOP
+				#print ("after :")
+				#print worldview['hall_orders']
+
 
 			local_orders = worldview['elevators'][id]['requests']
 
@@ -141,6 +146,8 @@ def should_i_take_order(worldview, my_id, Peers):
 				if(hall_orders[f][b][0] and not local_orders[f][b]):#must do this for all peers before calculating time
 					nontaken_order += 1
 					pass
+				elif(not hall_orders[f][b][0] and local_orders[f][b] and id == my_id):
+					worldview['elevators'][my_id]['requests'][f][b] = 0
 				else:
 					break
 
@@ -154,23 +161,35 @@ def should_i_take_order(worldview, my_id, Peers):
 				print("my duration: " + repr(my_duration))
 
 				i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
-
 				for id in Peers:
 					if(id != my_id):
 						other_elevator = Elevator(None, False)
 						other_elevator.worldview_to_elevator(worldview['elevators'][id])
 						other_duration = assignment_time_to_idle(other_elevator)
-						print("other duration: " + repr(other_duration))
 						if(my_duration > other_duration):
 							i_should_take = False #Another Elevator is faster
 							break
+						elif my_duration == other_duration:
+							#print(abs(my_elevator.floor - f))
+							#print("other")
+							#print(abs(other_elevator.floor - f))
+							if abs(my_elevator.floor - f) > abs(other_elevator.floor - f):
+								print("hei")
+								i_should_take = False
+								break
+							elif my_elevator.floor == other_elevator.floor and my_id > id:
+								i_should_take = False
+								break
+							else:
+								pass
+
 						else:
 							pass
 					else:
 						pass
 				if(i_should_take):
 					worldview['elevators'][my_id]['requests'][f][b] = 1
-					print("took order")
+					#print("took order")
 				else:
 					pass #Check next button
 			else:

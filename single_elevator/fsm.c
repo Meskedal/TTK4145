@@ -180,3 +180,10 @@ int fsm_get_e_request(int floor, int btn){
 int fsm_set_e_request(int value, int floor, int btn){
     elevator.requests[floor][btn] = value;
 }
+
+void fsm_clear_floor(int floor){
+    for(Button btn = 0; btn < N_BUTTONS-1; btn++){
+         elevator.requests[floor][btn] = 0;
+    }
+    setAllLights(elevator);
+}
