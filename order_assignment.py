@@ -135,7 +135,7 @@ class Assigner:
 							other_elevator.worldview_to_elevator(worldview['elevators'][id])
 							assign_elev2 = Assigner(other_elevator)
 							other_duration = assign_elev2.time_to_idle()
-							if(my_duration > other_duration):a
+							if(my_duration > other_duration):
 								i_should_take = False #Another Elevator is faster
 								break
 							elif my_duration == other_duration:

@@ -19,7 +19,7 @@ def init():
 	args = parser.parse_args()
 	port_number = args.sim_port #Sender's email address
 	if port_number:
-		with open('single_elevator/elevator_hardware.con', 'r') as file:
+		with open('C_interface/elevator_hardware.con', 'r') as file:
 			print(port_number)
 			data = file.readlines()
 
@@ -27,12 +27,12 @@ def init():
 		data[3] = "--com_port              " + port_number
 
 		# and write everything back
-		with open('single_elevator/elevator_hardware.con', 'w') as file:
+		with open('C_interface/elevator_hardware.con', 'w') as file:
 		    file.writelines(data)
 		#subprocess.call(['cd', 'elevatorHW'])
 		#subprocess.call(['./' , 'SimElevatorServer'])
 	else:
-		with open('single_elevator/elevator_hardware.con', 'r') as file:
+		with open('C_interface/elevator_hardware.con', 'r') as file:
 			print(port_number)
 			data = file.readlines()
 
@@ -40,7 +40,7 @@ def init():
 		data[3] = "--com_port              " + '15657'
 
 		# and write everything back
-		with open('single_elevator/elevator_hardware.con', 'w') as file:
+		with open('C_interface/elevator_hardware.con', 'w') as file:
 		    file.writelines(data)
 
 def main():
@@ -170,7 +170,7 @@ def should_i_take_order(worldview, my_id, Peers):
 						other_elevator.worldview_to_elevator(worldview['elevators'][id])
 						assign_elev2 = Assigner(other_elevator)
 						other_duration = assign_elev2.time_to_idle()
-						if(my_duration > other_duration):a
+						if(my_duration > other_duration):
 							i_should_take = False #Another Elevator is faster
 							break
 						elif my_duration == other_duration:

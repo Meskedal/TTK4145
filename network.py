@@ -109,22 +109,13 @@ class Broadcast:
 			sock.sendto(worldview, ('<broadcast>', target_port))
 		return
 
-	def network_local_ip(self):
-
-		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		s.connect(("8.8.8.8", 80))
-		ip = s.getsockname()[0]
-		s.close()
-		#print(os.getpid())
-		return ip + ':' +  repr(os.getpid())
-
 	def network_create_worldview(self): #Creates worldview dictionary with ip as key
 		while(self.worldview_queue.empty()):
 			sleep(0.02)
 
 		worldview = self.worldview_queue.get()
 		try:
-			ip = self.network_local_ip()
+			ip = network_local_ip()
 		except IOError as e:
 			self.print_lock.acquire()
 			print(e)
@@ -138,3 +129,12 @@ def print_peers(Peers):
 	for ip in Peers:
 		print(ip + " - " + repr(Peers[ip]))
 	return
+
+def network_local_ip():
+
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("8.8.8.8", 80))
+	ip = s.getsockname()[0]
+	s.close()
+		#print(os.getpid())
+	return ip + ':' +  repr(os.getpid())
