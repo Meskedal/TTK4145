@@ -9,13 +9,13 @@ from ctypes import *
 from network import *
 import os, json
 
-os.system("gcc -c -fPIC single_elevator/main.c -o single_elevator/main.o")
-os.system("gcc -c -fPIC single_elevator/driver/elevator_hardware.c -o single_elevator/driver/elevator_hardware.o")
-os.system("gcc -c -fPIC single_elevator/fsm.c -o single_elevator/fsm.o")
-os.system("gcc -c -fPIC single_elevator/timer.c -o single_elevator/timer.o")
-os.system("gcc -c -fPIC single_elevator/elevator.c -o single_elevator/elevator.o")
-os.system("gcc -c -fPIC single_elevator/requests.c -o single_elevator/requests.o")
-os.system("gcc -shared -Wl,-soname,single_elevator/pymain.so -o single_elevator/pymain.so  single_elevator/main.o single_elevator/driver/elevator_hardware.o single_elevator/fsm.o single_elevator/timer.o single_elevator/elevator.o single_elevator/requests.o -lc")
+os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
+os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
+os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
+os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
+os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
+os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
+os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
 
 N_FLOORS = 4
@@ -74,7 +74,7 @@ def get_requests(c):
 	return ELEVATOR_REQUESTS
 
 def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_queue, print_lock):
-	c = cdll.LoadLibrary('./single_elevator/pymain.so')
+	c = cdll.LoadLibrary('./C_interface/pymain.so')
 
 
 	#print("Started")

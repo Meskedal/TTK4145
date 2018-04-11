@@ -3,9 +3,9 @@
 __author__      = "gitgudd"
 import pprint
 
-from single_elevator.order_fulfillment import *
-from Network.network import *
-from order_assignment.order_assignment import *
+from order_fulfillment import *
+from network import *
+from order_assignment import *
 import subprocess
 #sys.path.insert(0, '/home/student/Desktop/TTK4145')
 #import order_assignment.order_assignment.py

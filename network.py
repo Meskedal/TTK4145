@@ -2,7 +2,6 @@
 import threading, thread, Queue, socket, errno, json
 from time import sleep, time
 import os
-#from ..Network.network import *
 
 
 class Thread(threading.Thread):
