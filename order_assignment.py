@@ -114,70 +114,56 @@ class Assigner:
 				self.elevator.requests[self.elevator.floor][button] = 0
 
 	def should_i_take_order(self):
-		hall_orders = self.worldview['hall_orders']
-		for f in range (0, N_FLOORS):
-			for b in range (0, N_BUTTONS-1):
-				elevators_without_order = 0
-				for id in self.peers:
-					local_orders = self.worldview['elevators'][id]['requests']
-					if(hall_orders[f][b][0] and not local_orders[f][b]):#must do this for all peers before calculating time
-						elevators_without_order+= 1
-
-					else:
-						break
-
+		for floor in range (0, N_FLOORS):
+			for button in range (0, N_BUTTONS-1):
+				if not is_order_taken(floor,button):
 					i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
 					my_duration = self.time_to_idle()
 
 					for id in self.peers:
-						if(id != self.id):
-							other_elevator = Assigner(self.worldview, id, self.peers)
-							other_duration = other_elevator.time_to_idle()
-							if not(other_elevator.elevator.behaviour == EB_DoorOpen and other_elevator.elevator.floor == f):
-
-								if(my_duration > other_duration):
-									i_should_take = False #Another Elevator is faster
-									break
-
-								elif my_duration == other_duration:
-									if abs(self.elevator.floor - f) > abs(other_elevator.elevator.floor - f):
-										i_should_take = False
-										break
-									elif abs(self.elevator.floor - f) - abs(other_elevator.elevator.floor - f) == 0 and self.id > id:
-										i_should_take = False
-										break
-									else:
-										pass
-								else:
-									pass
-
-							else:
-								i_should_take = False
-								break
+						if(am_i_faster_than_id(id,floor)):
+							self.worldview['elevators'][self.id]['requests'][floor][button] = 1
 						else:
-							pass
-					if(i_should_take):
-						self.worldview['elevators'][self.id]['requests'][f][b] = 1
-						#print("took order")
-					else:
-						pass #Check next button
+							self.worldview['elevators'][self.id]['requests'][floor][button] = 0
+							break
 				else:
-					pass #A Elevator has the order
+					pass #Check next button
+
 		return self.worldview
 
-	def is_order_taken(floor, button):
+	def is_order_taken(self, floor, button):
+		hall_orders = self.worldview['hall_orders']
 		elevators_without_order = 0
 		for id in self.peers:
 			local_orders = self.worldview['elevators'][id]['requests']
-			if(hall_orders[f][b][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
-				elevators_without_order+= 1
+			if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
+				elevators_without_order += 1
 			#elif(not hall_orders[f][b][0] and local_orders[f][b] and id == self.id): #Does something that the function is not designed to do
 				#self.worldview['elevators'][self.id]['requests'][f][b] = 0
 			else:
-				break
+				break #The order is either taken or nonexistent
 
 		if elevators_without_order >= len(self.peers): #No elevator has taken the order, it needs to be assigned
+			return False
 		return True
+
+	def am_i_faster_than_id(self, id, floor):
+		if(id != self.id):
+			other_elevator_assigner = Assigner(self.worldview, id, self.peers)
+			other_duration = other_elevator.time_to_idle()
+			if other_elevator.elevator.behaviour == EB_DoorOpen and other_elevator.elevator.floor == floor:
+				return False #Another elevator is currently at the ordered floor
+			elif my_duration > other_duration:
+				return False #Another Elevator is faster
+			elif my_duration == other_duration:
+				if abs(self.elevator.floor - floor) > abs(other_elevator.elevator.floor - floor):
+					return False #The other elevator is closer
+				elif abs(self.elevator.floor - floor) - abs(other_elevator.elevator.floor - floor) == 0 and self.id > id:
+					return False #The elevator with the lowest id takes order
+		return True
+
+
+
 
 
 
