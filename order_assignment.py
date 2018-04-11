@@ -34,40 +34,41 @@ class Assigner:
 		self.id = id
 		self.worldview = worldview
 		self.peers = peers
+		self.copy_elevator = deepcopy(self.elevator)
 
 	def time_to_idle(self):
 		duration = 0
-		if self.elevator.behaviour == EB_Idle:
+		if self.copy_elevator.behaviour == EB_Idle:
 			elevator_dirn = self.choose_direction()
 			if elevator_dirn == D_Stop:
 				return duration
-		elif self.elevator.behaviour == EB_Moving:
+		elif self.copy_elevator.behaviour == EB_Moving:
 			duration += TRAVEL_TIME/2
-			self.elevator.floor += self.elevator.dirn
-		elif self.elevator.behaviour == EB_DoorOpen:
+			self.copy_elevator.floor += self.copy_elevator.dirn
+		elif self.copy_elevator.behaviour == EB_DoorOpen:
 			duration -= DOOR_OPEN_TIME/2
 		while True:
 			if self.should_stop():
 				self.clear_at_current_floor()
 				duration += DOOR_OPEN_TIME
-				self.elevator.dirn = self.choose_direction();
-				if self.elevator.dirn == D_Stop:
+				self.copy_elevator.dirn = self.choose_direction();
+				if self.copy_elevator.dirn == D_Stop:
 					return duration
 
-			self.elevator.floor += self.elevator.dirn;
+			self.copy_elevator.floor += self.copy_elevator.dirn;
 			duration += TRAVEL_TIME
 		return duration
 
 	def choose_direction(self):
 
-		if self.elevator.dirn == D_Up:
+		if self.copy_elevator.dirn == D_Up:
 			if self.assignment_above():
 				return D_Up
 			elif self.assignment_below():
 				return D_Down
 			else:
 				return D_Stop
-		elif self.elevator.dirn == D_Stop:
+		elif self.copy_elevator.dirn == D_Stop:
 			if self.assignment_below():
 				return D_Down
 			elif self.assignment_above():
@@ -79,28 +80,28 @@ class Assigner:
 
 	def assignment_above(self): # Returns boolean
 
-		for floor in range(self.elevator.floor+1, N_FLOORS):
+		for floor in range(self.copy_elevator.floor+1, N_FLOORS):
 			for button in range(0,N_BUTTONS):
-				if self.elevator.requests[floor][button]:
+				if self.copy_elevator.requests[floor][button]:
 					return True
 		return False
 
 	def assignment_below(self): # Returns boolean
-		for floor in range(0, self.elevator.floor):
+		for floor in range(0, self.copy_elevator.floor):
 			for button in range(0,N_BUTTONS):
-				if self.elevator.requests[floor][button]:
+				if self.copy_elevator.requests[floor][button]:
 					return True
 		return False
 
 	def should_stop(self): # Returns boolean
 
-		if self.elevator.dirn == D_Down:
-			if self.elevator.requests[self.elevator.floor][B_HallDown] or self.elevator.requests[self.elevator.floor][B_Cab] or not self.assignment_below():
+		if self.copy_elevator.dirn == D_Down:
+			if self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] or self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] or not self.assignment_below():
 				return True
 			else:
 				return False
-		elif self.elevator.dirn == D_Up:
-			if self.elevator.requests[self.elevator.floor][B_HallUp] or self.elevator.requests[self.elevator.floor][B_Cab] or not self.assignment_above():
+		elif self.copy_elevator.dirn == D_Up:
+			if self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] or self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] or not self.assignment_above():
 				return True
 			else:
 				return False
@@ -110,26 +111,24 @@ class Assigner:
 
 	def clear_at_current_floor(self):
 		for button in range(0,N_BUTTONS):
-			if self.elevator.requests[self.elevator.floor][button] == 1:
-				self.elevator.requests[self.elevator.floor][button] = 0
+			if self.copy_elevator.requests[self.copy_elevator.floor][button] == 1:
+				self.copy_elevator.requests[self.copy_elevator.floor][button] = 0
 
 	def should_i_take_order(self):
+		worldview = self.worldview
+		counter = 0
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS-1):
-				if not is_order_taken(floor,button):
-					i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
-					my_duration = self.time_to_idle()
-
+				if not self.is_order_taken(floor,button):
 					for id in self.peers:
-						if(am_i_faster_than_id(id,floor)):
-							self.worldview['elevators'][self.id]['requests'][floor][button] = 1
+						if(self.am_i_faster_than_id(id,floor)):
+							worldview['elevators'][self.id]['requests'][floor][button] = 1
 						else:
 							self.worldview['elevators'][self.id]['requests'][floor][button] = 0
 							break
 				else:
 					pass #Check next button
-
-		return self.worldview
+		return worldview
 
 	def is_order_taken(self, floor, button):
 		hall_orders = self.worldview['hall_orders']
@@ -138,8 +137,8 @@ class Assigner:
 			local_orders = self.worldview['elevators'][id]['requests']
 			if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
 				elevators_without_order += 1
-			#elif(not hall_orders[f][b][0] and local_orders[f][b] and id == self.id): #Does something that the function is not designed to do
-				#self.worldview['elevators'][self.id]['requests'][f][b] = 0
+			elif(not hall_orders[floor][button][0] and local_orders[floor][button] and id == self.id): #Does something that the function is not designed to do
+				self.worldview['elevators'][self.id]['requests'][floor][button] = 0
 			else:
 				break #The order is either taken or nonexistent
 
@@ -148,8 +147,9 @@ class Assigner:
 		return True
 
 	def am_i_faster_than_id(self, id, floor):
+		my_duration = self.time_to_idle()
 		if(id != self.id):
-			other_elevator_assigner = Assigner(self.worldview, id, self.peers)
+			other_elevator = Assigner(self.worldview, id, self.peers)
 			other_duration = other_elevator.time_to_idle()
 			if other_elevator.elevator.behaviour == EB_DoorOpen and other_elevator.elevator.floor == floor:
 				return False #Another elevator is currently at the ordered floor

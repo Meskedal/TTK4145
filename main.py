@@ -94,12 +94,16 @@ def main():
 						worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
 
 				assigner_thingy = Assigner(worldview, network_local_ip(), Peers)
+				#print(worldview['elevators'][network_local_ip()]['requests'])
+				#print("a")
 				worldview = assigner_thingy.should_i_take_order()
+				#print(worldview['elevators'][network_local_ip()]['requests'])
+				#p#rint("aa")
 				#worldview = should_i_take_order(worldview, network_local_ip(), Peers) #INF LOOP
 				#print ("after :")
 				#print worldview['hall_orders']
 
-
+			#print(worldview['hall_orders'])
 			local_orders = worldview['elevators'][id]['requests']
 
 			if (local_orders_queue.empty()):
