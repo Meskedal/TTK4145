@@ -1,15 +1,15 @@
 #pragma once
 
-#define N_FLOORS 4
+#define N_FLOORS 8
 #define N_BUTTONS 3
 
-typedef enum { 
+typedef enum {
     D_Down  = -1,
     D_Stop  = 0,
     D_Up    = 1
 } Dirn;
 
-typedef enum { 
+typedef enum {
     B_HallUp,
     B_HallDown,
     B_Cab
@@ -21,7 +21,7 @@ typedef struct {
     int (*requestButton)(int, Button);
     int (*stopButton)(void);
     int (*obstruction)(void);
-    
+
 } ElevInputDevice;
 
 typedef struct {

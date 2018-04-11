@@ -1,7 +1,7 @@
 #pragma once
 
 // Number of floors. Hardware-dependent, do not modify.
-#define N_FLOORS 4
+#define N_FLOORS 8
 
 // Number of buttons (and corresponding lamps) on a per-floor basis
 #define N_BUTTONS 3

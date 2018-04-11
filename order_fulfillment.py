@@ -18,7 +18,7 @@ os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
 os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
 
-N_FLOORS = 4
+N_FLOORS = 8
 N_BUTTONS = 3
 
 EB_Idle = 0

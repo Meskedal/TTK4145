@@ -9,7 +9,7 @@ from order_fulfillment import *
 
 ## Global variables ##
 
-N_FLOORS = 4
+N_FLOORS = 8
 N_BUTTONS = 3
 
 EB_Idle = 0
@@ -134,13 +134,21 @@ class Assigner:
 		hall_orders = self.worldview['hall_orders']
 		elevators_without_order = 0
 		for id in self.peers:
-			local_orders = self.worldview['elevators'][id]['requests']
-			if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
-				elevators_without_order += 1
-			elif(not hall_orders[floor][button][0] and local_orders[floor][button] and id == self.id): #Does something that the function is not designed to do
-				self.worldview['elevators'][self.id]['requests'][floor][button] = 0
-			else:
-				break #The order is either taken or nonexistent
+			#print("")
+			#print(self.peers)
+			#print(self.worldview['elevators'])
+			try:
+				local_orders = self.worldview['elevators'][id]['requests']
+				if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
+					elevators_without_order += 1
+				elif(not hall_orders[floor][button][0] and local_orders[floor][button] and id == self.id): #Does something that the function is not designed to do
+					self.worldview['elevators'][self.id]['requests'][floor][button] = 0
+				else:
+					break #The order is either taken or nonexistent
+
+			except KeyError as e:
+				print(e)
+				print(self.worldview['elevators'])
 
 		if elevators_without_order >= len(self.peers): #No elevator has taken the order, it needs to be assigned
 			return False

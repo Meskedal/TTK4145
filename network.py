@@ -88,6 +88,8 @@ class Receive:
 				self.print_lock.acquire()
 				print(e)
 				self.print_lock.release()
+			except:
+				pass
 
 class Broadcast:
 	def __init__(self, broadcastEvent, worldview_queue, print_lock):

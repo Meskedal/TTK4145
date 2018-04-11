@@ -77,6 +77,7 @@ def main():
 
 			if(not Peers_queue2.empty()):
 				Peers = Peers_queue2.get()
+				print(Peers)
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
@@ -110,15 +111,16 @@ def main():
 				local_orders_queue.put(local_orders)
 			if (worldview_queue.empty()):
 				worldview_queue.put(worldview)
+			#print(worldview)
 
 		except KeyboardInterrupt as e:
 			print e
 			heartbeat_run_event.clear()
 			c_main_run_event.clear()
-			while(heartbeat.is_alive()):
-				heartbeat.join(timeout = 0.1)
-			while(c_main_fun.is_alive()):
-				c_main_fun.join(timeout = 0.1)
+			#while(heartbeat.is_alive()):
+				#heartbeat.join(timeout = 0.1)
+			#while(c_main_fun.is_alive()):
+				#c_main_fun.join(timeout = 0.1)
 			print_lock.acquire()
 			print("Exited Gracefully")
 			print_lock.release()
