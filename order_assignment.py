@@ -28,10 +28,12 @@ TRAVEL_TIME = 3
 DOOR_OPEN_TIME = 3
 
 class Assigner:
-	def __init__(self, elevator, worldview, id, peers):
-		self.elevator = deepcopy(elevator)
+	def __init__(self, worldview, id, peers):
+		self.elevator = Elevator(0,False)
+		self.elevator.worldview_to_elevator(worldview, id)
 		self.id = id
 		self.worldview = worldview
+		self.peers = peers
 
 	def time_to_idle(self):
 		duration = 0
@@ -42,7 +44,7 @@ class Assigner:
 		elif self.elevator.behaviour == EB_Moving:
 			duration += TRAVEL_TIME/2
 			self.elevator.floor += self.elevator.dirn
-		elif self.elevator.behaviour == EB_DoorOpenOpen:
+		elif self.elevator.behaviour == EB_DoorOpen:
 			duration -= DOOR_OPEN_TIME/2
 		while True:
 			if self.should_stop():
@@ -111,59 +113,62 @@ class Assigner:
 			if self.elevator.requests[self.elevator.floor][button] == 1:
 				self.elevator.requests[self.elevator.floor][button] = 0
 
-	def should_i_take_order(self, worldview, my_id, peers):
-		hall_orders = worldview['hall_orders']
+	def should_i_take_order(self):
+		hall_orders = self.worldview['hall_orders']
 		for f in range (0, N_FLOORS):
 			for b in range (0, N_BUTTONS-1):
 				elevators_without_order = 0
-				for id in peers:
-					local_orders = worldview['elevators'][id]['requests']
+				for id in self.peers:
+					local_orders = self.worldview['elevators'][id]['requests']
 					if(hall_orders[f][b][0] and not local_orders[f][b]):#must do this for all peers before calculating time
 						elevators_without_order+= 1
-					elif(not hall_orders[f][b][0] and local_orders[f][b] and id == my_id): #Does something that the function is not designed to do
-						worldview['elevators'][my_id]['requests'][f][b] = 0
+					elif(not hall_orders[f][b][0] and local_orders[f][b] and id == self.id): #Does something that the function is not designed to do
+						self.worldview['elevators'][self.id]['requests'][f][b] = 0
 					else:
 						break
 
-				if elevators_without_order >= len(peers): #No elevator has taken the order, it needs to be assigned
+				if elevators_without_order >= len(self.peers): #No elevator has taken the order, it needs to be assigned
 					i_should_take = True #This elevator should take the order until mayhaps another elevator has been found
 					my_duration = self.time_to_idle()
 
-					for id in peers:
-						if(id != my_id):
-							other_elevator = Elevator(None, False)
-							other_elevator.worldview_to_elevator(worldview['elevators'][id])
-							assign_elev2 = Assigner(other_elevator)
-							other_duration = assign_elev2.time_to_idle()
-							if(my_duration > other_duration):
-								i_should_take = False #Another Elevator is faster
-								break
-							elif my_duration == other_duration:
-								#print(abs(my_elevator.floor - f))
-								#print("other")
-								#print(abs(other_elevator.floor - f))
-								if abs(my_elevator.floor - f) > abs(other_elevator.floor - f):
-									print("hei")
-									i_should_take = False
+					for id in self.peers:
+						if(id != self.id):
+							other_elevator = Assigner(self.worldview, id, self.peers)
+							other_duration = other_elevator.time_to_idle()
+							if not(other_elevator.elevator.behaviour == 1 and other_elevator.elevator.floor == f):
+
+								if(my_duration > other_duration):
+									i_should_take = False #Another Elevator is faster
 									break
-								elif my_elevator.floor == other_elevator.floor and my_id > id:
-									i_should_take = False
-									break
+								elif my_duration == other_duration:
+									#print(abs(my_elevator.floor - f))
+									#print("other")
+									#print(abs(other_elevator.floor - f))
+									if abs(self.elevator.floor - f) > abs(other_elevator.elevator.floor - f):
+										#print("hei")
+										i_should_take = False
+										break
+									elif abs(self.elevator.floor - f) - abs(other_elevator.elevator.floor - f) == 0 and self.id > id:
+										i_should_take = False
+										break
+									else:
+										pass
 								else:
 									pass
 
 							else:
-								pass
+								i_should_take = False
+								break
 						else:
 							pass
 					if(i_should_take):
-						worldview['elevators'][my_id]['requests'][f][b] = 1
+						self.worldview['elevators'][self.id]['requests'][f][b] = 1
 						#print("took order")
 					else:
 						pass #Check next button
 				else:
 					pass #A Elevator has the order
-		return worldview
+		return self.worldview
 
 
 

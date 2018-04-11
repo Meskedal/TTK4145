@@ -43,6 +43,7 @@ class Elevator:
 			self.requests = None
 			self.id = None
 
+
 	def update(self):
 		self.behaviour = self.c.fsm_get_e_behaviour()
 		self.floor = self.c.fsm_get_e_floor()
@@ -57,11 +58,12 @@ class Elevator:
 		print(self.requests)
 		print("")
 
-	def worldview_to_elevator(self, elevator_dict):
-		self.behaviour = elevator_dict["behaviour"]
-		self.floor = elevator_dict["floor"]
-		self.dirn = elevator_dict["dirn"]
-		self.requests = elevator_dict["requests"]
+	def worldview_to_elevator(self, worldview, id):
+		self.behaviour = worldview['elevators'][id]["behaviour"]
+		self.floor = worldview['elevators'][id]["floor"]
+		self.dirn = worldview['elevators'][id]["dirn"]
+		self.requests = worldview['elevators'][id]["requests"]
+		self.id = id
 
 
 
