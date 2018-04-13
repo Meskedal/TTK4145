@@ -1,20 +1,5 @@
-C to python interface
+Things to add:
+Correct identifier for elevators
+Key does not exists error
+potential error when exiting during a send
 
-
-Get functions:
-	get_e_requests()
-	get_e_dirn()
-	get_e_floor()
-	get_e_behaviour()
-
-Set functions:
-	set_e_requests()
-
-
-
-
-***WorldView***
-- Global table of all hall orders at every floor with timestamps
-- 
-
-Time for elevator python side to update is about 25us

@@ -93,7 +93,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				v = c.elevator_hardware_get_button_signal(b, f)
 				if(v  and  v != prev[f][b]):
 					if(b != 2):
-						hallorder_update(hall_order_pos_queue,f,b, True)
+						hallorder_update(hall_order_pos_queue,f,b, 1)
 					else:
 						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
@@ -102,7 +102,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 		if (f != -1 and f != prev):
 			if(c.fsm_onFloorArrival(f)):
 				for b in range (0, N_BUTTONS-1):
-					hallorder_update(hall_order_pos_queue, f, b, False)
+					hallorder_update(hall_order_pos_queue, f, b, 0)
 
 		synchronize_requests(local_orders_queue, elevator)
 		#if(not local_orders_queue.empty()):
