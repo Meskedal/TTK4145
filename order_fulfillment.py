@@ -104,11 +104,11 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				for b in range (0, N_BUTTONS-1):
 					hallorder_update(hall_order_pos_queue, f, b, False)
 
-
-		if(not local_orders_queue.empty()):
-			local_orders = local_orders_queue.get()
-			should_take_order(local_orders, elevator)
-			local_orders_queue.task_done()
+		synchronize_requests(local_orders_queue, elevator)
+		#if(not local_orders_queue.empty()):
+			#local_orders = local_orders_queue.get()
+			#synchronize_requests(local_orders, elevator)
+			#local_orders_queue.task_done()
 
 		prev = f
 
@@ -128,26 +128,26 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 		#print(elevator.floor)
 
 def elevator_to_dict(elevator):
-	eks = {}
-	eks[elevator.id] = {}
-	eks[elevator.id]["behaviour"] = elevator.behaviour
-	eks[elevator.id]["floor"] = elevator.floor
-	eks[elevator.id]["dirn"] = elevator.dirn
-	eks[elevator.id]["requests"] = elevator.requests
-	return eks
+	elev = {}
+	elev[elevator.id] = {}
+	elev[elevator.id]["behaviour"] = elevator.behaviour
+	elev[elevator.id]["floor"] = elevator.floor
+	elev[elevator.id]["dirn"] = elevator.dirn
+	elev[elevator.id]["requests"] = elevator.requests
+	return elev
 
-def should_take_order(worldview_local_orders, elevator): #Needs a queue from main to c_main function
-	#print(worldview_local_orders)
-	for f in range (0, N_FLOORS):
-		for b in range (0, N_BUTTONS-1):
-			if(worldview_local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
-				elevator.c.fsm_onRequestButtonPress(f, b)
-			elif(worldview_local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
-				elevator.c.fsm_clear_floor(f)
-			else:
-				pass
-	#print("after")
-	#print elevator.requests
+def synchronize_requests(local_orders_queue, elevator): #Needs a queue from main to c_main function. Puts the assigned orders into the elevators own requests table.
+	if(not local_orders_queue.empty()):
+		local_orders = local_orders_queue.get()
+		for f in range (0, N_FLOORS):
+			for b in range (0, N_BUTTONS-1):
+				if(local_orders[f][b] == 1 and elevator.requests[f][b] == 0):
+					elevator.c.fsm_onRequestButtonPress(f, b)
+				elif(local_orders[f][b] == 0 and elevator.requests[f][b] == 1):
+					elevator.c.fsm_clear_floor(f)
+				else:
+					pass
+		local_orders_queue.task_done()
 
 def hallorder_update(hall_order_pos_queue, floor, button, status):
 	order = [floor, button, status]
