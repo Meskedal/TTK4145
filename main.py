@@ -53,55 +53,37 @@ def main():
 	worldview['elevators'] = {}
 	worldview_queue = Queue.Queue()
 	elevator_queue = Queue.Queue()
-<<<<<<< HEAD
-	local_orders_queue = Queue.Queue()
-	hall_orders_pos_queue = Queue.Queue()
-	peers = {}
-=======
-	worldview_foreign_queue = Queue.Queue()
-	Peers_queue2 = Queue.Queue()
 	local_orders_queue = Queue.Queue()
 	hall_order_queue = Queue.Queue()
-	Peers = {}
->>>>>>> 1f0149959782bf263ad4dbe61ffeeb1ebabb7fa4
 	my_id = network_local_ip()
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
 	order_fulfillment_run_event = threading.Event()
 	heartbeat_run_event.set()
-<<<<<<< HEAD
-	c_main_run_event.set()
 	network = Network(heartbeat_run_event, worldview_queue, print_lock)
-	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
-=======
-	order_fulfillment_run_event.set()
-	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	order_fulfillment = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
->>>>>>> 1f0149959782bf263ad4dbe61ffeeb1ebabb7fa4
-	go = True
 
+	order_fulfillment_run_event.set()
+	fulfiller = Fulfiller(order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
+	#order_fulfillment2 = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
+	go = True
 	while(go):
 		try:
-<<<<<<< HEAD
 			peers = network.get_peers()
-			print peers
-
+			lost = network.get_lost()
 			elevator_queue.join()
-=======
-			#print elevator_queue.qsize()
->>>>>>> 1f0149959782bf263ad4dbe61ffeeb1ebabb7fa4
 			elevator = elevator_queue.get()
+			elevator_queue.task_done()
 			id = next(iter(elevator))
+			#print id
 			worldview['elevators'][id] = elevator[id]
-<<<<<<< HEAD
-=======
-
-			Peers = network.get_peers()
-			print Peers
->>>>>>> 1f0149959782bf263ad4dbe61ffeeb1ebabb7fa4
+			#print peers
+			worldview = delete_lost_peers(worldview, peers, lost)
+			#print worldview
+			#print peers
 			#if(not Peers_queue2.empty()):
 				#Peers = Peers_queue2.get()
 				#print(Peers)
+
 
 			worldview_foreign = network.get_worldview_foreign()
 			if (worldview_foreign):
@@ -109,17 +91,21 @@ def main():
 				worldview_foreign = worldview_foreign[id_foreign]
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
 				#worldview_foreign_queue.task_done()
-
-				while not hall_order_queue.empty():
-					order = hall_order_queue.get()
-					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
-					if order[2] == 0:
-						worldview['elevators'][network_local_ip()]['requests'][order[0]][order[1]] = order[2]
-
-				assigner_thingy = Assigner(worldview, network_local_ip(), peers)
-				worldview = assigner_thingy.should_i_take_order()
-			worldview = delete_lost_peers(worldview, peers)
-
+			while not hall_order_queue.empty():
+				order = hall_order_queue.get()
+				worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
+				#print worldview['hall_orders']
+				if order[2] == 0:
+					worldview['elevators'][my_id]['requests'][order[0]][order[1]] = order[2]
+			print "b"
+			print worldview['hall_orders']
+			assigner_thingy = Assigner(worldview, my_id, peers) #local requests goes from 0 to 1 after assigner
+			worldview = assigner_thingy.should_i_take_order()
+			print "a"
+			print worldview['hall_orders']
+			#for id in worldview['elevators']:
+				#print id
+				#pass
 			#print(worldview['hall_orders'])
 			local_orders = worldview['elevators'][id]['requests']
 			local_orders_queue.join()
@@ -170,9 +156,10 @@ def worldview_from_local_elevator(worldview, local_orders_elevator):
 	for f in range (0, N_FLOORS):
 		for b in range (0, N_BUTTONS-1):
 			pass
-def delete_lost_peers(worldview, peers): ##FIX this
-	for id in worldview['elevators']
-		if id not in peers:
+
+def delete_lost_peers(worldview, peers, lost): ##FIX this
+	for id in worldview['elevators']:
+		if id in lost:
 			del worldview['elevators'][id]
 			break
 	return worldview

@@ -1,6 +1,6 @@
 #pragma once
 
-#define N_FLOORS 8
+#define N_FLOORS 4
 #define N_BUTTONS 3
 
 typedef enum {

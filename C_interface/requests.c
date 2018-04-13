@@ -51,6 +51,7 @@ int requests_shouldStop(Elevator e){
             e.requests[e.floor][B_Cab]      ||
             !requests_above(e);
     case D_Stop:
+
     default:
         return 1;
     }

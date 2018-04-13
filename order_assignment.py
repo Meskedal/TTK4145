@@ -9,7 +9,7 @@ from order_fulfillment import *
 
 ## Global variables ##
 
-N_FLOORS = 8
+N_FLOORS = 4
 N_BUTTONS = 3
 
 EB_Idle = 0
@@ -29,7 +29,7 @@ DOOR_OPEN_TIME = 3
 
 class Assigner:
 	def __init__(self, worldview, id, peers):
-		self.elevator = Elevator(0,False)
+		self.elevator = Elevator(None)
 		self.elevator.worldview_to_elevator(worldview, id)
 		self.id = id
 		self.worldview = worldview
@@ -37,6 +37,7 @@ class Assigner:
 		self.copy_elevator = deepcopy(self.elevator)
 
 	def time_to_idle(self):
+		#return 0
 		duration = 0
 		if self.copy_elevator.behaviour == EB_Idle:
 			elevator_dirn = self.choose_direction()
@@ -116,7 +117,7 @@ class Assigner:
 
 	def should_i_take_order(self):
 		worldview = self.worldview
-		counter = 0
+		#counter = 0
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS-1):
 				if not self.is_order_taken(floor,button):

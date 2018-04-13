@@ -14,6 +14,7 @@ class Network:
 	def __init__(self, heartbeatEvent, worldview_queue, print_lock):
 
 		self.peers = {}
+		self.peers[network_local_ip()] = time()
 		self.lost = {}
 
 		self.peers_queue = Queue.Queue()
@@ -58,6 +59,9 @@ class Network:
 		self.peers_queue.join()
 		return self.peers
 
+	def get_lost(self):
+		return self.lost
+
 	def get_worldview_foreign(self):
 		if(not self.worldview_foreign_queue.empty()):
 			return self.worldview_foreign_queue.get()
@@ -67,7 +71,7 @@ class Network:
 class Receive:
 	def __init__(self, peers_queue, receiveEvent, worldview_foreign_queue, print_lock):
 		self.peers_queue = peers_queue
-		self.timeout = 1.6
+		self.timeout = 5
 		self.receiveEvent = receiveEvent
 		self.worldview_foreign_queue = worldview_foreign_queue
 		self.print_lock = print_lock
@@ -92,7 +96,7 @@ class Receive:
 			try:
 				data, addr = sock.recvfrom(1024)
 				worldview_foreign = json.loads(data)
-				print worldview_foreign
+				#print worldview_foreign
 				id_foreign = next(iter(worldview_foreign))
 				timestamp = time()
 				peer_entry = [id_foreign, timestamp]
