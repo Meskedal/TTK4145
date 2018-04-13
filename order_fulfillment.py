@@ -95,7 +95,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 				v = c.elevator_hardware_get_button_signal(b, f)
 				if(v  and  v != prev[f][b]):
 					if(b != 2):
-						hallorder_update(hall_order_pos_queue,f,b, 1)
+						hallorder_update(hall_order_pos_queue,f,b, True)
 					else:
 						c.fsm_onRequestButtonPress(f, b)
 				prev[f][b] = v
@@ -105,13 +105,13 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 		if (f != -1 and f != prev):
 			if(c.fsm_onFloorArrival(f)):
 				for b in range (0, N_BUTTONS-1):
-					hallorder_update(hall_order_pos_queue, f, b, 0)
+					hallorder_update(hall_order_pos_queue, f, b, False)
 
 
 		if(not local_orders_queue.empty()):
 			local_orders = local_orders_queue.get()
-
 			should_take_order(local_orders, elevator)
+			local_orders_queue.task_done()
 
 		prev = f
 
@@ -124,7 +124,7 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_pos_
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
 		else:
-			elevator_queue.get() #may get concurrency erros, maybe use task done/join
+			#elevator_queue.get() #may get concurrency erros, maybe use task done/join
 			elevator_queue.put(elevator_to_dict(elevator))
 
 		c.usleep(inputPollRate_ms*1000)

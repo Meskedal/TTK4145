@@ -71,17 +71,19 @@ def main():
 
 	while(go):
 		try:
+			#print elevator_queue.qsize()
 			elevator = elevator_queue.get()
 			id = next(iter(elevator))
 			worldview['elevators'][id] = elevator[id]
 
-			if(not Peers_queue2.empty()):
-				Peers = Peers_queue2.get()
-				print(Peers)
+			Peers = network.get_peers()
+			print Peers
+			#if(not Peers_queue2.empty()):
+				#Peers = Peers_queue2.get()
+				#print(Peers)
 
 			if(not worldview_foreign_queue.empty()):
 				worldview_foreign = worldview_foreign_queue.get()
-
 				id_foreign = next(iter(worldview_foreign))
 				worldview_foreign = worldview_foreign[id_foreign]
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
@@ -106,9 +108,8 @@ def main():
 
 			#print(worldview['hall_orders'])
 			local_orders = worldview['elevators'][id]['requests']
-
-			if (local_orders_queue.empty()):
-				local_orders_queue.put(local_orders)
+			local_orders_queue.join()
+			local_orders_queue.put(local_orders)
 			if (worldview_queue.empty()):
 				worldview_queue.put(worldview)
 			#print(worldview)

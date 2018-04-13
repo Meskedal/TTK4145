@@ -36,6 +36,7 @@ class Network:
 			if not self.peers_queue.empty():
 				item = self.peers_queue.get()
 				self.peers[item[0]] = item[1]
+				self.peers_queue.task_done()
 				if item[0] in self.lost:
 					del self.lost[item[0]]
 				self.peers_queue2.put(self.peers)
@@ -45,12 +46,16 @@ class Network:
 					self.lost[ip] = current_time
 					del self.peers[ip]
 					break
+			#self.peers_queue.task_done()
 
 		self.receiveEvent.clear()
 		self.broadcastEvent.clear()
 		#self.receive.join()
 		#self.broadcast.join()
 	#def network_heartbeat
+	def get_peers(self):
+		self.peers_queue.join()
+		return self.peers
 
 class Receive:
 	def __init__(self, peers_queue, receiveEvent, worldview_foreign_queue, print_lock):
