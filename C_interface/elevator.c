@@ -13,37 +13,6 @@ char* eb_toString(ElevatorBehaviour eb){
                               "EB_UNDEFINED"    ;
 }
 
-
-
-/*void elevator_print(Elevator es){
-    printf("  +--------------------+\n");
-    printf(
-        "  |floor = %-2d          |\n"
-        "  |dirn  = %-12.12s|\n"
-        "  |behav = %-12.12s|\n",
-        es.floor,
-        elevio_dirn_toString(es.dirn),
-        eb_toString(es.behaviour)
-    );
-    printf("  +--------------------+\n");
-    printf("  |  | up  | dn  | cab |\n");
-    for(int f = N_FLOORS-1; f >= 0; f--){
-        printf("  | %d", f);
-        for(int btn = 0; btn < N_BUTTONS; btn++){
-            if((f == N_FLOORS-1 && btn == B_HallUp)  || 
-               (f == 0 && btn == B_HallDown) 
-            ){
-                printf("|     ");
-            } else {
-                printf(es.requests[f][btn] ? "|  #  " : "|  -  ");
-            }
-        }
-        printf("|\n");
-    }
-    printf("  +--------------------+\n");
-}
-*/
-
 Elevator elevator_uninitialized(void){
     return (Elevator){
         .floor = -1,
@@ -54,8 +23,4 @@ Elevator elevator_uninitialized(void){
             .doorOpenDuration_s = 3.0,
         },
     };
-}
-
-int elevator_get_floor(Elevator e){
-    
 }

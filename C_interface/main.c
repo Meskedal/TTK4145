@@ -13,19 +13,18 @@
 int main(void){
 
     printf("Started!\n");
-    
+
     int inputPollRate_ms = 25;
     con_load("elevator.con",
         con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
     )
-    
-    //ElevInputDevice input = elevio_getInputDevice();  
-    elevator_hardware_init();  
-    
+
+    elevator_hardware_init();
+
     if(elevator_hardware_get_floor_sensor_signal() == -1){
         fsm_onInitBetweenFloors();
     }
-        
+
     while(1){
         { // Request button
             static int prev[N_FLOORS][N_BUTTONS];
@@ -39,7 +38,7 @@ int main(void){
                 }
             }
         }
-        
+
         { // Floor sensor
             static int prev;
             int f = elevator_hardware_get_floor_sensor_signal();
@@ -48,24 +47,15 @@ int main(void){
             }
             prev = f;
         }
-        
-        
+
+
         { // Timer
             if(timer_timedOut()){
                 fsm_onDoorTimeout();
                 timer_stop();
             }
         }
-        
+
         usleep(inputPollRate_ms*1000);
     }
 }
-
-
-
-
-
-
-
-
-
