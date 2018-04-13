@@ -23,8 +23,6 @@ static void __attribute__((constructor)) fsm_init(){
             con_match(CV_InDirn)
         )
     )
-
-    //outputDevice = elevio_getOutputDevice();
 }
 
 static void setAllLights(Elevator es){
@@ -41,22 +39,12 @@ void fsm_onInitBetweenFloors(void){
     elevator.behaviour = EB_Moving;
 }
 
-int get_a(){
-    return 3;
-}
-
 void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
-    //printf("\n\n%s(%d, %s)\n", __FUNCTION__, btn_floor, elevio_button_toString(btn_type));
-    //elevator_print(elevator);
-
     switch(elevator.behaviour){
 
     case EB_DoorOpen:
         if(elevator.floor == btn_floor){
             timer_start(elevator.config.doorOpenDuration_s);
-            //elevator.requests[btn_floor][btn_type] = 0;
-            //elevator = requests_clearAtCurrentFloor(elevator);
-            //setAllLights(elevator);
 
         } else {
             elevator.requests[btn_floor][btn_type] = 1;
@@ -83,22 +71,14 @@ void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
     }
 
     setAllLights(elevator);
-    //printf("\nNew state:\n");
-    //elevator_print(elevator);
-
 }
 
 
 
 
 int fsm_onFloorArrival(int newFloor){
-    //printf("\n\n%s(%d)\n", __FUNCTION__, newFloor);
-    //elevator_print(elevator);
-
     elevator.floor = newFloor;
-
     elevator_hardware_set_floor_indicator(elevator.floor);
-
     switch(elevator.behaviour){
     case EB_Moving:
         if(requests_shouldStop(elevator)){
@@ -114,31 +94,16 @@ int fsm_onFloorArrival(int newFloor){
 
     case EB_DoorOpen:
         if(requests_shouldStop(elevator)){
-            //elevator_hardware_set_motor_direction(D_Stop);
-            //elevator_hardware_set_door_open_lamp(1);
-            //elevator = requests_clearAtCurrentFloor(elevator);
-            //timer_start(elevator.config.doorOpenDuration_s);
-            //setAllLights(elevator);
-            //elevator.behaviour = EB_DoorOpen;
             return 1;
         }
-        return 0;
-
     default:
-
         return 0;
     }
-
-    //printf("\nNew state:\n");
-    //elevator_print(elevator);
 }
 
 
 
 void fsm_onDoorTimeout(void){
-    //printf("\n\n%s()\n", __FUNCTION__);
-    //elevator_print(elevator);
-
     switch(elevator.behaviour){
     case EB_DoorOpen:
         elevator.dirn = requests_chooseDirection(elevator);
@@ -157,8 +122,6 @@ void fsm_onDoorTimeout(void){
         break;
     }
 
-    //printf("\nNew state:\n");
-    //elevator_print(elevator);
 }
 
 int fsm_get_e_floor(void){
