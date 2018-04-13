@@ -62,11 +62,11 @@ def main():
 	my_id = network_local_ip()
 	print_lock = threading.Lock()
 	heartbeat_run_event = threading.Event()
-	c_main_run_event = threading.Event()
+	order_fulfillment_run_event = threading.Event()
 	heartbeat_run_event.set()
-	c_main_run_event.set()
+	order_fulfillment_run_event.set()
 	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	c_main_fun = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
+	order_fulfillment = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
 	go = True
 
 	while(go):
@@ -117,7 +117,7 @@ def main():
 		except KeyboardInterrupt as e:
 			print e
 			heartbeat_run_event.clear()
-			c_main_run_event.clear()
+			order_fulfillment_run_event.clear()
 			#while(heartbeat.is_alive()):
 				#heartbeat.join(timeout = 0.1)
 			#while(c_main_fun.is_alive()):

@@ -214,8 +214,9 @@ def c_main(c_main_run_event, elevator_queue, local_orders_queue, hall_order_queu
 		if(elevator_queue.empty()):
 			elevator_queue.put(elevator_to_dict(elevator))
 		else:
-			#elevator_queue.get() #may get concurrency erros, maybe use task done/join
+			elevator_queue.get() #may get concurrency erros, maybe use task done/join
 			elevator_queue.put(elevator_to_dict(elevator))
+			elevator_queue.task_done()
 
 		c_library.usleep(inputPollRate_ms*1000)
 		#print(elevator.floor)
