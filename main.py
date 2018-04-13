@@ -57,7 +57,7 @@ def main():
 	worldview_foreign_queue = Queue.Queue()
 	Peers_queue2 = Queue.Queue()
 	local_orders_queue = Queue.Queue()
-	hall_orders_pos_queue = Queue.Queue()
+	hall_order_queue = Queue.Queue()
 	Peers = {}
 	my_id = network_local_ip()
 	print_lock = threading.Lock()
@@ -66,7 +66,7 @@ def main():
 	heartbeat_run_event.set()
 	c_main_run_event.set()
 	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
-	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
+	c_main_fun = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
 	go = True
 
 	while(go):
@@ -88,8 +88,8 @@ def main():
 				worldview_foreign = worldview_foreign[id_foreign]
 				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
 
-				while not hall_orders_pos_queue.empty():
-					order = hall_orders_pos_queue.get()
+				while not hall_order_queue.empty():
+					order = hall_order_queue.get()
 					worldview['hall_orders'][order[0]][order[1]] = [order[2], time()]
 					#print ("beffore :")
 					#print worldview['hall_orders']
