@@ -55,7 +55,7 @@ def main():
 	worldview_queue = Queue.Queue()
 	elevator_queue = Queue.Queue()
 	worldview_foreign_queue = Queue.Queue()
-	Peers_queue2 = Queue.Queue()
+	Network_peers_queue = Queue.Queue()
 	local_orders_queue = Queue.Queue()
 	hall_orders_pos_queue = Queue.Queue()
 	Peers = {}
@@ -65,16 +65,19 @@ def main():
 	c_main_run_event = threading.Event()
 	heartbeat_run_event.set()
 	c_main_run_event.set()
-	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, Peers_queue2, print_lock)
+	network = Network(heartbeat_run_event, worldview_queue, worldview_foreign_queue, network_peers_queue, print_lock)
 	c_main_fun = Thread(c_main, c_main_run_event, elevator_queue, local_orders_queue, hall_orders_pos_queue, print_lock)
 	go = True
 
 	while(go):
 		try:
 			#print elevator_queue.qsize()
+			elevator_queue.join()
 			elevator = elevator_queue.get()
+			elevator_queue.task_done()
 			id = next(iter(elevator))
 			worldview['elevators'][id] = elevator[id]
+
 
 			Peers = network.get_peers()
 			print Peers
