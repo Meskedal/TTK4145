@@ -16,8 +16,10 @@ import getpass as gp
 def init():
 	parser = ap.ArgumentParser(description='Port for simulation')
 	parser.add_argument('-p', '--port', dest='sim_port', required=False, metavar='<port_number>')
+	parser.add_argument('-f', '--alone', dest='alone', required=False, metavar='<if_elevator_alone')
 	args = parser.parse_args()
 	port_number = args.sim_port #Sender's email address
+	alone = args.alone
 	if port_number:
 		with open('C_interface/elevator_hardware.con', 'r') as file:
 			print(port_number)
@@ -42,11 +44,13 @@ def init():
 		# and write everything back
 		with open('C_interface/elevator_hardware.con', 'w') as file:
 		    file.writelines(data)
+	if alone:
+		return True
 
 def main():
-	init()
+	alone = init()
 	pp = pprint.PrettyPrinter(indent=4)
-
+	print(alone)
 
 	worldview = {}
 	worldview['hall_orders'] = [[[0,0] for x in range(0,N_BUTTONS-1)] for y in range(0,N_FLOORS)]
@@ -74,8 +78,13 @@ def main():
 			elevator = elevator_queue.get()
 			elevator_queue.task_done()
 			id = next(iter(elevator))
-			#print id
 			worldview['elevators'][id] = elevator[id]
+			#print id
+			if len(peers) < 2:
+				for f in range (0, N_FLOORS):
+						for b in range (0, N_BUTTONS-1):
+								worldview['elevators'][id]['requests'][f][b] = 0
+								worldview['hall_orders'][f][b] =[0,0]
 			#print peers
 			worldview = delete_lost_peers(worldview, peers, lost)
 			#print worldview
@@ -88,8 +97,9 @@ def main():
 			worldview_foreign = network.get_worldview_foreign()
 			if (worldview_foreign):
 				id_foreign = next(iter(worldview_foreign))
-				worldview_foreign = worldview_foreign[id_foreign]
-				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
+				if id_foreign != my_id:
+					worldview_foreign = worldview_foreign[id_foreign]
+					worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
 				#worldview_foreign_queue.task_done()
 			while not hall_order_queue.empty():
 				order = hall_order_queue.get()
@@ -97,19 +107,22 @@ def main():
 				#print worldview['hall_orders']
 				if order[2] == 0:
 					worldview['elevators'][my_id]['requests'][order[0]][order[1]] = order[2]
-			print "b"
-			print worldview['hall_orders']
+			#print "worldview"
+			#print worldview['hall_orders']
+			#print("local orders")
+			#print(worldview['elevators'][my_id]['requests'])
 			assigner_thingy = Assigner(worldview, my_id, peers) #local requests goes from 0 to 1 after assigner
 			worldview = assigner_thingy.should_i_take_order()
-			print "a"
-			print worldview['hall_orders']
+			#print(worldview['elevators'][my_id]['requests'])
+			#print worldview['hall_orders']
 			#for id in worldview['elevators']:
 				#print id
 				#pass
 			#print(worldview['hall_orders'])
-			local_orders = worldview['elevators'][id]['requests']
-			local_orders_queue.join()
-			local_orders_queue.put(local_orders)
+			if len(peers) >= 2:
+				local_orders = worldview['elevators'][id]['requests']
+				local_orders_queue.join()
+				local_orders_queue.put(local_orders)
 			if (worldview_queue.empty()):
 				#worldview_queue.join()
 				worldview_queue.put(worldview)

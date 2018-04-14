@@ -12,7 +12,7 @@ static  double          timerEndTime;
 static  int             timerActive;
 
 void timer_start(double duration){
-		printf("Started\n");
+		//printf("Started\n");
     timerEndTime    = get_wall_time() + duration;
     timerActive     = 1;
 }

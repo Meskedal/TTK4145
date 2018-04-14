@@ -106,6 +106,8 @@ class Fulfiller:
 
 	def order_fulfillment(self):
 		prev = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
+		#edge_case = [0, 0]
+		#print edge_case[0]
 		while(self.order_fulfillment_run_event.is_set()):
 			#prev = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
 			for floor in range (0, N_FLOORS):
@@ -126,18 +128,14 @@ class Fulfiller:
 
 
 			current_floor = self.c_library.elevator_hardware_get_floor_sensor_signal()
-			if (current_floor != -1): #and current_floor != self.elevator.floor):
-				#print "hei"
+			if (current_floor != -1):
 				if(self.c_library.fsm_onFloorArrival(current_floor)):
 					for button in range (0, N_BUTTONS-1):
+						#if self.elevator.requests[current_floor][button]:
 						self.hall_order_update(current_floor, button, CLEAR)
-						#print("cleared order")
-			#self.synchronize_elevator()
+						print("clear")
+
 			self.synchronize_requests()
-			#print "Elevator: "
-			#print self.elevator.behaviour
-			#print self.elevator.floor
-			#print self.elevator.dirn
 
 			if(self.c_library.timer_timedOut()):
 				#print"hei"
@@ -151,18 +149,22 @@ class Fulfiller:
 			self.c_library.usleep(self.inputPollRate_ms*1000)
 
 	def synchronize_requests(self):
+		#edge_case2 = [0, 0]
 		while(not self.local_orders_queue.empty()):
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
-					if(local_orders[floor][button] == 1 and self.elevator.requests[floor][button] == 0):
+					if(local_orders[floor][button] == 1): #and self.elevator.requests[floor][button] == 0):
 						self.elevator.c_library.fsm_onRequestButtonPress(floor, button)
+						#edge_case2 = [edge_case, floor]
+
 
 					elif(local_orders[floor][button] == 0 and self.elevator.requests[floor][button] == 1):
 						self.elevator.c_library.fsm_clear_floor(floor)
 					else:
 						pass
 			self.local_orders_queue.task_done()
+		  	#return edge_case2
 
 	def synchronize_elevator(self):
 		if(self.elevator_queue.empty()):
