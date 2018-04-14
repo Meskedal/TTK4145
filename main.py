@@ -79,13 +79,17 @@ def main():
 			elevator_queue.task_done()
 			id = next(iter(elevator))
 			worldview['elevators'][id] = elevator[id]
+			if elevator_is_ooo(worldview, my_id):
+				print("oooo")
+				#break
+
 			#print id
 			if len(peers) < 2:
 				for f in range (0, N_FLOORS):
 						for b in range (0, N_BUTTONS-1):
-								worldview['elevators'][id]['requests'][f][b] = 0
-								worldview['hall_orders'][f][b] =[0,0]
-			#print peers
+							worldview['elevators'][id]['requests'][f][b] = 0
+							worldview['hall_orders'][f][b] =[0,0]
+			#print(worldview[hall_orders])
 			worldview = delete_lost_peers(worldview, peers, lost)
 			#print worldview
 			#print peers
@@ -97,9 +101,9 @@ def main():
 			worldview_foreign = network.get_worldview_foreign()
 			if (worldview_foreign):
 				id_foreign = next(iter(worldview_foreign))
-				if id_foreign != my_id:
-					worldview_foreign = worldview_foreign[id_foreign]
-					worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
+				#if id_foreign != my_id:
+				worldview_foreign = worldview_foreign[id_foreign]
+				worldview = worldview_hall_orders_correct(worldview, worldview_foreign,id_foreign)
 				#worldview_foreign_queue.task_done()
 			while not hall_order_queue.empty():
 				order = hall_order_queue.get()
@@ -145,6 +149,9 @@ def main():
 			print("Exited Gracefully")
 			print_lock.release()
 			go = False
+	#while end
+	heartbeat_run_event.clear()
+	order_fulfillment_run_event.clear()
 
 def worldview_hall_orders_correct(worldview, worldview_foreign, id_foreign):
 	worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
@@ -177,5 +184,19 @@ def delete_lost_peers(worldview, peers, lost): ##FIX this
 			break
 	return worldview
 
+def elevator_is_ooo(worldview, my_id):
+	current_time = time()
+	for f in range (0, N_FLOORS):
+		for b in range (0, N_BUTTONS-1):
+			hall_order_status = []
+			hall_order_status = worldview['hall_orders'][f][b]
+			#print repr(hall_order_status[0]) + " " +repr(f) + " " + repr(b) + " " +repr(my_id)
+			#print(f)
+			if hall_order_status[0] and worldview['elevators'][my_id]['requests'][f][b]:
+				if current_time - hall_order_status[1] > 7:
+					return True
+
+
+	return False
 
 main()

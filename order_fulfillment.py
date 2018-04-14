@@ -37,6 +37,7 @@ class Elevator:
 			self.dirn = c_library.fsm_get_e_dirn()
 			self.requests = self.get_requests()
 			self.id = network_local_ip()
+			#self.ooo = False
 		else:
 			self.c_library = None
 			self.behaviour = None
@@ -72,6 +73,7 @@ class Elevator:
 		self.floor = worldview['elevators'][id]["floor"]
 		self.dirn = worldview['elevators'][id]["dirn"]
 		self.requests = worldview['elevators'][id]["requests"]
+		#self.ooo = worldview['elevators'][id]["ooo"]
 		self.id = id
 
 	def elevator_to_dict(self):
@@ -81,6 +83,8 @@ class Elevator:
 		elev[self.id]["floor"] = self.floor
 		elev[self.id]["dirn"] = self.dirn
 		elev[self.id]["requests"] = self.requests
+		#if (self.ooo):
+			#elev[self.id]["ooo"] = self.ooo
 		return elev
 
 class Fulfiller:
@@ -133,7 +137,7 @@ class Fulfiller:
 					for button in range (0, N_BUTTONS-1):
 						#if self.elevator.requests[current_floor][button]:
 						self.hall_order_update(current_floor, button, CLEAR)
-						print("clear")
+						#print("clear")
 
 			self.synchronize_requests()
 
@@ -154,7 +158,7 @@ class Fulfiller:
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
-					if(local_orders[floor][button] == 1): #and self.elevator.requests[floor][button] == 0):
+					if(local_orders[floor][button] == 1 ):#and self.elevator.requests[floor][button] == 0):
 						self.elevator.c_library.fsm_onRequestButtonPress(floor, button)
 						#edge_case2 = [edge_case, floor]
 
@@ -177,6 +181,10 @@ class Fulfiller:
 	def hall_order_update(self, floor, button, status):
 		order = [floor, button, status]
 		self.hall_order_queue.put(order)
+
+	def ooo_status(self):
+		return 0
+
 
 
 
