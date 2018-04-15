@@ -37,7 +37,7 @@ class State_machine:
         self.worldview_queue = worldview_queue
 
 
-    def alone_thing(self):
+    def redundancy_check(self):
         #print("hei")
         if len(self.peers) < 2:
             for f in range (0, N_FLOORS):
@@ -45,19 +45,20 @@ class State_machine:
                         self.worldview['elevators'][self.id]['requests'][f][b] = 0
                         self.worldview['hall_orders'][f][b] =[0,0]
 
-    def update_local_worldview():
-        self.worldview['elevators'][self.id] = self.elevator[self.id]
-
     def set_elevator(self, elevator):
         self.elevator = elevator
         self.state = STATE_SYNC_ELEVATOR
 
         id = next(iter(elevator))
         self.worldview['elevators'][id] = elevator[id]
+        self.redundancy_check()
+
+
 
     def update_peers(self, peers, lost_peers):
         self.peers = peers
         self.lost_peers = lost_peers
+        self.delete_lost_peers()
 
     def pass_local_worldview(self):
         if len(self.peers) >= 2:
@@ -74,25 +75,19 @@ class State_machine:
             self.worldview_queue.get() ##Removing essential information?
             self.worldview_queue.put(self.worldview)
 
-    def get_state(self):
-        return self.state
-    def set_worldview(self, worldview):
-        self.worldview = worldview
-    def get_worldview(self):
-        return worldview
-
     def delete_lost_peers(self): ##FIX this
     	for id in self.worldview['elevators']:
     		if id in self.lost_peers:
     			del self.worldview['elevators'][id]
     			break
 
-    def elevator_is_ooo(self): #should be inside elevator
-        return 1
+    #def elevator_is_ooo(self): #should be inside elevator
+        #return 1
 
     def assign_orders(self):
-        assigner_thingy = Assigner(self.worldview, self.id, self.peers) #local requests goes from 0 to 1 after assigner
-        self.worldview = assigner_thingy.should_i_take_order()
+        if len(self.peers) >= 2:
+            assigner_thingy = Assigner(self.worldview, self.id, self.peers) #local requests goes from 0 to 1 after assigner
+            self.worldview = assigner_thingy.should_i_take_order()
 
 
 
@@ -104,13 +99,13 @@ class State_machine:
     	hall_orders = self.worldview['hall_orders']
     	hall_orders_foreign = worldview_foreign['hall_orders']
     	for f in range (0, N_FLOORS):
-    			for b in range (0, N_BUTTONS-1):
+    		for b in range (0, N_BUTTONS-1):
     				#if hall_orders[f][b][0] != hall_orders_foreign[f][b][0]:
-    				if hall_orders[f][b][1] < hall_orders_foreign[f][b][1]:
-    					hall_orders[f][b][0] = hall_orders_foreign[f][b][0]
-    					hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
-    				else:
-    					pass
+    			if hall_orders[f][b][1] < hall_orders_foreign[f][b][1]:
+    				hall_orders[f][b][0] = hall_orders_foreign[f][b][0]
+    				hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
+    			else:
+    				pass
 
     	self.worldview['hall_orders'] = hall_orders
 

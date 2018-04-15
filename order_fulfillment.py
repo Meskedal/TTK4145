@@ -18,7 +18,7 @@ os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
 os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
 
-N_FLOORS = 4
+N_FLOORS = 8
 N_BUTTONS = 3
 
 EB_Idle = 0
@@ -98,7 +98,7 @@ class Fulfiller:
 		self.print_lock = print_lock
 		self.order_fulfillment_run_event = order_fulfillment_run_event
 		self.inputPollRate_ms = 25
-		self.c_main = Thread(self.order_fulfillment)
+		self.c_main = Thread(self.run)
 		#self.prev = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
 
 	def initialize(self):
@@ -108,7 +108,7 @@ class Fulfiller:
 		if(self.c_library.elevator_hardware_get_floor_sensor_signal() == -1):
 			self.c_library.fsm_onInitBetweenFloors()
 
-	def order_fulfillment(self):
+	def run(self):
 		prev = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
 		#edge_case = [0, 0]
 		#print edge_case[0]
@@ -151,6 +151,9 @@ class Fulfiller:
 			#self.elevator.update()
 			#print self.elevator.requests
 			self.c_library.usleep(self.inputPollRate_ms*1000)
+
+		print("c_main thread exited gracefully")
+
 
 	def synchronize_requests(self):
 		#edge_case2 = [0, 0]

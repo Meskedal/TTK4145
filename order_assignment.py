@@ -9,7 +9,7 @@ from order_fulfillment import *
 
 ## Global variables ##
 
-N_FLOORS = 4
+N_FLOORS = 8
 N_BUTTONS = 3
 
 EB_Idle = 0
