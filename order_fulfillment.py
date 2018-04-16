@@ -4,7 +4,7 @@
 __author__      = "gitgudd"
 
 
-
+from copy import deepcopy
 from ctypes import *
 from network import *
 import os, json
@@ -27,6 +27,10 @@ EB_Moving = 2
 
 SET = 1
 CLEAR = 0
+
+UP = 0
+DOWN = 1
+BOTH = 2
 
 class Elevator:
 	def __init__(self, c_library):
@@ -122,9 +126,15 @@ class Fulfiller:
 	def clear_orders(self):
 		current_floor = self.c_library.elevator_hardware_get_floor_sensor_signal()
 		if (current_floor != -1):
+			elev_before = deepcopy(self.elevator.requests)
 			if(self.c_library.fsm_onFloorArrival(current_floor)):
 				if(self.hall_order_queue.empty()):
-					for button in range (0, N_BUTTONS-1):
+					self.elevator.update()
+					button = self.clear_direction(current_floor, elev_before)
+					if button == 2:
+						for button in range (0, N_BUTTONS-1):
+							self.hall_order_update(current_floor, button, CLEAR)
+					else:
 						self.hall_order_update(current_floor, button, CLEAR)
 
 	def poll_buttons(self, prev_button_status):
@@ -163,3 +173,18 @@ class Fulfiller:
 	def hall_order_update(self, floor, button, status):
 		order = [floor, button, status]
 		self.hall_order_queue.put(order)
+
+	def clear_direction(self, floor, elev_before):
+		counter = 0
+		for button in range (0, N_BUTTONS-1):
+			if self.elevator.requests[floor][button] != elev_before[floor][button]:
+				counter += 1
+				button_dirn = button;
+		if counter == 2:
+			return BOTH
+		elif counter == 1:
+			if button_dirn == UP:
+				return UP
+			return DOWN
+		else:
+			return False
