@@ -40,20 +40,17 @@ class Network:
 				self.peers_queue.task_done()
 				if id in self.lost_peers:
 					del self.lost_peers[id]
-				#self.peers_queue2.put(self.peers)
 
 			for id in self.peers:
 				if(self.peers[id] < current_time - self.heartbeat_timeout):
 					self.lost_peers[id] = current_time
 					del self.peers[id]
 					break
-			#self.peers_queue.task_done()
 
 		self.receive_run_event.clear()
 		self.broadcast_run_event.clear()
 
 		print("Thread heartbeat exited gracefully")
-
 
 	def get_peers(self):
 		self.peers_queue.join()
@@ -79,18 +76,11 @@ class Receive:
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.settimeout(self.timeout)
-		try:
-			sock.bind(('<broadcast>', 20002))
-		except:
-			print 'failure to bind, critical error'
-			sock.close()
-			raise
-			return None
+		sock.bind(('<broadcast>', 20002))
 		return sock
 
-	def run(self): #Receives worldview from id and passes id with timestamp to peers_queue.
+	def run(self):
 		sock = self.socket_init()
-											  #id:worldview is also passed to worldview_foreign_queue
 		while(self.run_event.isSet()):
 			try:
 				data, addr = sock.recvfrom(1024)
@@ -105,7 +95,6 @@ class Receive:
 				print(e)
 				raise
 
-		print("Thread receiving exited gracefully")
 
 
 class Broadcast:
@@ -126,7 +115,7 @@ class Broadcast:
 		while(self.run_event.isSet()):
 			sleep(0.2)
 			while(self.worldview_queue.empty() and self.run_event.isSet()):
-				pass
+				sleep(0.01)
 			while(not self.worldview_queue.empty()):
 					worldview_with_id = self.worldview_queue.get()
 			worldview_with_id = json.dumps(worldview_with_id)

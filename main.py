@@ -33,35 +33,25 @@ def main():
 		try:
 			peers, lost_peers = network.get_peers()
 			wv_handler.update_peers(peers,lost_peers)
-			print(1)
-			#elevator_to_worldview_queue.join()
-			elevator = elevator_to_worldview_queue.get()
-			#elevator_to_worldview_queue.task_done()
-			print(2)
+			while elevator_to_worldview_queue.empty():
+				pass
+			while not elevator_to_worldview_queue.empty():
+				elevator = elevator_to_worldview_queue.get()
 			wv_handler.worldview_update_elevator(elevator)
-			print(3)
 
 			worldview_foreign = network.get_worldview_foreign()
 			if (worldview_foreign):
-				print(4)
 				wv_handler.sync_worldviews(worldview_foreign)
-			print(5)
 			while not hall_order_to_worldview_queue.empty():
 				order = hall_order_to_worldview_queue.get()
-				print(6)
 				wv_handler.update_order(order)
 				hall_order_to_worldview_queue.task_done()
 
-			print(7)
 			wv_handler.assign_orders()
-			print(8)
 			wv_handler.pass_local_worldview()
-			print(9)
 			wv_handler.pass_worldview_with_id()
-			print(10)
 			if wv_handler.local_hardware_failure():
 				go = False
-
 
 		except KeyboardInterrupt as e:
 			print e

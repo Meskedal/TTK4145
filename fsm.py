@@ -40,17 +40,14 @@ class Worldview_handler:
     def pass_local_worldview(self):
         if len(self.peers) >= 2:
             local_orders = self.worldview['elevators'][self.id]['requests']
-            #self.local_orders_queue.join()
             self.local_orders_queue.put(local_orders)
 
     def pass_worldview_with_id(self):
         worldview_with_id = {}
         worldview_with_id[self.id] = self.worldview
-        print(11)
         self.worldview_to_broadcast_queue.put(worldview_with_id)
-        print(12)
 
-    def delete_lost_peers(self): ##FIX this
+    def delete_lost_peers(self):
     	for id in self.worldview['elevators']:
     		if id in self.lost_peers:
     			del self.worldview['elevators'][id]

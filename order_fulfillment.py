@@ -3,11 +3,11 @@
 
 __author__      = "gitgudd"
 
-
+import os, thread, threading, json
 from copy import deepcopy
 from ctypes import *
-from network import *
-import os, json
+from time import time
+
 
 os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
 os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
@@ -31,6 +31,12 @@ CLEAR = 0
 UP = 0
 DOWN = 1
 BOTH = 2
+
+class Thread(threading.Thread):
+	def __init__(self, t, *args):
+		threading.Thread.__init__(self, target=t, args=args)
+		self.daemon = True
+		self.start()
 
 class Elevator:
 	def __init__(self, c_library):
@@ -64,14 +70,6 @@ class Elevator:
 				requests[floor][button] = self.c_library.fsm_get_e_request(c_int(floor),c_int(button))
 		return requests
 
-	def print_status(self):
-		behaviour = "Behaviour: %d\n" % self.behaviour
-		floor = "Floor: %d\n" % self.floor
-		dirn = "Dirn: %d" % self.dirn
-		print(behaviour + floor + dirn)
-		print(self.requests)
-		print("")
-
 	def worldview_to_elevator(self, worldview, id):
 		self.behaviour = worldview['elevators'][id]["behaviour"]
 		self.floor = worldview['elevators'][id]["floor"]
@@ -88,7 +86,7 @@ class Elevator:
 		elev["hardware_failure"] = self.hardware_failure
 		return elev
 
-	def elevator_failure(self):
+	def failure_check(self):
 		current_time = time()
 		if self.behaviour == EB_Moving and self.prev_time:
 			if current_time - self.prev_time > 20:
@@ -128,7 +126,7 @@ class Fulfiller:
 				self.c_library.timer_stop()
 
 			self.elevator.update()
-			self.elevator.elevator_failure()
+			self.elevator.failure_check()
 			self.synchronize_elevator()
 			self.c_library.usleep(self.inputPollRate_ms*500)
 
@@ -179,11 +177,11 @@ class Fulfiller:
 			self.local_orders_queue.task_done()
 
 	def synchronize_elevator(self):
-		if(self.elevator_queue.empty()):
-			self.elevator_queue.put(self.elevator.elevator_to_dict())
-		else:
-			self.elevator_queue.get()
-			self.elevator_queue.put(self.elevator.elevator_to_dict())
+		#if(self.elevator_queue.empty()):
+			#self.elevator_queue.put(self.elevator.elevator_to_dict())
+		#else:
+			#self.elevator_queue.get()
+		self.elevator_queue.put(self.elevator.elevator_to_dict())
 			#self.elevator_queue.task_done()
 
 	def hall_order_update(self, floor, button, status):
