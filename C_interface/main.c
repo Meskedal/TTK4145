@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "con_load.h"
-//#include "elevator_io_device.h"
 #include "driver/elevator_hardware.h"
 #include "fsm.h"
 #include "timer.h"

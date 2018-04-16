@@ -40,7 +40,6 @@ class Network:
 				self.peers_queue.task_done()
 				if id in self.lost_peers:
 					del self.lost_peers[id]
-				#self.peers_queue2.put(self.peers)
 
 			for id in self.peers:
 				if(self.peers[id] < current_time - self.heartbeat_timeout):

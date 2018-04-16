@@ -12,7 +12,6 @@ static  double          timerEndTime;
 static  int             timerActive;
 
 void timer_start(double duration){
-		//printf("Started\n");
     timerEndTime    = get_wall_time() + duration;
     timerActive     = 1;
 }
@@ -22,6 +21,5 @@ void timer_stop(void){
 }
 
 int timer_timedOut(void){
-	//printf("wall time: %f", get_wall_time());
     return (timerActive  &&  get_wall_time() > timerEndTime);
 }

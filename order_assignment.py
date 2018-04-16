@@ -9,21 +9,6 @@ from order_fulfillment import *
 
 ## Global variables ##
 
-N_FLOORS = 8
-N_BUTTONS = 3
-
-EB_Idle = 0
-EB_DoorOpen = 1
-EB_Moving = 2
-
-B_HallUp = 0
-B_HallDown = 1
-B_Cab = 2
-
-D_Up = 1
-D_Down = -1
-D_Stop = 0
-
 TRAVEL_TIME = 3
 DOOR_OPEN_TIME = 3
 

@@ -23,10 +23,10 @@ class Worldview_handler:
 
     def redundancy_check(self):
         if len(self.peers) < 2:
-            for f in range (0, N_FLOORS):
-                    for b in range (0, N_BUTTONS-1):
-                        self.worldview['elevators'][self.id]['requests'][f][b] = 0
-                        self.worldview['hall_orders'][f][b] =[0,0]
+            for floor in range (0, N_FLOORS):
+                    for button in range (0, N_BUTTONS-1):
+                        self.worldview['elevators'][self.id]['requests'][floor][button] = 0
+                        self.worldview['hall_orders'][floor][button] =[0,0]
 
     def worldview_update_elevator(self, elevator):
         self.worldview['elevators'][self.id] = elevator
@@ -68,11 +68,11 @@ class Worldview_handler:
         self.worldview['elevators'][id_foreign] = worldview_foreign['elevators'][id_foreign]
     	hall_orders = self.worldview['hall_orders']
     	hall_orders_foreign = worldview_foreign['hall_orders']
-    	for f in range (0, N_FLOORS):
-    		for b in range (0, N_BUTTONS-1):
-    			if hall_orders[f][b][1] < hall_orders_foreign[f][b][1]:
-    				hall_orders[f][b][0] = hall_orders_foreign[f][b][0]
-    				hall_orders[f][b][1] = hall_orders_foreign[f][b][1]
+    	for floor in range (0, N_FLOORS):
+    		for button in range (0, N_BUTTONS-1):
+    			if hall_orders[floor][button][1] < hall_orders_foreign[floor][button][1]:
+    				hall_orders[floor][button][0] = hall_orders_foreign[floor][button][0]
+    				hall_orders[floor][button][1] = hall_orders_foreign[floor][button][1]
 
     	self.worldview['hall_orders'] = hall_orders
 
@@ -87,29 +87,24 @@ class Worldview_handler:
     	parser.add_argument('-p', '--port', dest='sim_port', required=False, metavar='<port_number>')
     	parser.add_argument('-i', '--id', dest='id', required=True, metavar='<elev_id')
     	args = parser.parse_args()
-    	port_number = args.sim_port #Sender's email address
+    	port_number = args.sim_port
     	self.id = args.id
     	if port_number:
     		with open('C_interface/elevator_hardware.con', 'r') as file:
     			print(port_number)
     			data = file.readlines()
 
-    # now change the 2nd line, note that you have to add a newline
     		data[3] = "--com_port              " + port_number
 
-    		# and write everything back
     		with open('C_interface/elevator_hardware.con', 'w') as file:
     		    file.writelines(data)
-    		#subprocess.call(['cd', 'elevatorHW'])
-    		#subprocess.call(['./' , 'SimElevatorServer'])
+
     	else:
     		with open('C_interface/elevator_hardware.con', 'r') as file:
     			print(port_number)
     			data = file.readlines()
 
-    # now change the 2nd line, note that you have to add a newline
     		data[3] = "--com_port              " + '15657'
 
-    		# and write everything back
     		with open('C_interface/elevator_hardware.con', 'w') as file:
     		    file.writelines(data)

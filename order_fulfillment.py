@@ -17,9 +17,18 @@ os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
 os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
 os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
+## Global variables ##
 
-N_FLOORS = 8
+N_FLOORS = 4
 N_BUTTONS = 3
+
+B_HallUp = 0
+B_HallDown = 1
+B_Cab = 2
+
+D_Up = 1
+D_Down = -1
+D_Stop = 0
 
 EB_Idle = 0
 EB_DoorOpen = 1
@@ -31,6 +40,7 @@ CLEAR = 0
 UP = 0
 DOWN = 1
 BOTH = 2
+NOONE = 3
 
 class Elevator:
 	def __init__(self, c_library):
@@ -143,14 +153,14 @@ class Fulfiller:
 				self.elevator.update()
 				#self.elevator.print_status()
 				if(self.hall_order_queue.empty()):
-					button = self.clear_direction(current_floor, elev_before)
-					if button == 3:
+					clear_button = self.clear_direction(current_floor, elev_before)
+					if clear_button == NOONE:
 						pass
-					elif button != 2:
-						self.hall_order_update(current_floor, button, CLEAR)
+					elif clear_button != BOTH:
+						self.hall_order_update(current_floor, clear_button, CLEAR)
 					else:
-						for button in range (0, N_BUTTONS-1):
-							self.hall_order_update(current_floor, button, CLEAR)
+						for clear_button in range (0, N_BUTTONS-1):
+							self.hall_order_update(current_floor, clear_button, CLEAR)
 
 	def poll_buttons(self, prev_button_status):
 		for floor in range (0, N_FLOORS):
@@ -166,7 +176,6 @@ class Fulfiller:
 
 	def synchronize_requests(self):
 		while(not self.local_orders_queue.empty()):
-			#print(time())
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
@@ -184,7 +193,6 @@ class Fulfiller:
 		else:
 			self.elevator_queue.get()
 			self.elevator_queue.put(self.elevator.elevator_to_dict())
-			#self.elevator_queue.task_done()
 
 	def hall_order_update(self, floor, button, status):
 		order = [floor, button, status]
@@ -203,4 +211,4 @@ class Fulfiller:
 				return UP
 			return DOWN
 		else:
-			return 3
+			return NOONE
