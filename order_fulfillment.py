@@ -128,14 +128,18 @@ class Fulfiller:
 		if (current_floor != -1):
 			elev_before = deepcopy(self.elevator.requests)
 			if(self.c_library.fsm_onFloorArrival(current_floor)):
+				print "before" +repr(elev_before)
+				self.elevator.update()
+				self.elevator.print_status()
 				if(self.hall_order_queue.empty()):
-					self.elevator.update()
 					button = self.clear_direction(current_floor, elev_before)
-					if button == 2:
+					if button == 3:
+						pass
+					elif button != 2:
+						self.hall_order_update(current_floor, button, CLEAR)
+					else:
 						for button in range (0, N_BUTTONS-1):
 							self.hall_order_update(current_floor, button, CLEAR)
-					else:
-						self.hall_order_update(current_floor, button, CLEAR)
 
 	def poll_buttons(self, prev_button_status):
 		for floor in range (0, N_FLOORS):
@@ -154,7 +158,7 @@ class Fulfiller:
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
-					if(local_orders[floor][button] == 1 ):
+					if(local_orders[floor][button] == 1 and self.elevator.requests[floor][button] == 0):
 						self.elevator.c_library.fsm_onRequestButtonPress(floor, button)
 					elif(local_orders[floor][button] == CLEAR and self.elevator.requests[floor][button] == SET):
 						self.elevator.c_library.fsm_clear_floor(floor)
@@ -187,4 +191,4 @@ class Fulfiller:
 				return UP
 			return DOWN
 		else:
-			return False
+			return 3

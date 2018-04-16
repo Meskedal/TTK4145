@@ -88,5 +88,5 @@ Elevator requests_clearAtCurrentFloor(Elevator e){
             e.requests[e.floor][B_HallDown] = 0;
             break;
         }
-      return e;
+    return e;
 }
