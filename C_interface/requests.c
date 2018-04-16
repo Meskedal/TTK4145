@@ -29,7 +29,7 @@ Dirn requests_chooseDirection(Elevator e){
                 requests_below(e) ? D_Down  :
                                     D_Stop  ;
     case D_Down:
-    case D_Stop: // there should only be one request in this case. Checking up or down first is arbitrary.
+    case D_Stop:
         return  requests_below(e) ? D_Down  :
                 requests_above(e) ? D_Up    :
                                     D_Stop  ;
@@ -63,8 +63,6 @@ int requests_atCurrentFloor(Elevator e){
           e.requests[e.floor][B_Cab];
 }
 
-
-//Elevator requests_clearAtCurrentFloor(Elevator e){
 Elevator requests_clearAtCurrentFloor(Elevator e){
     e.requests[e.floor][B_Cab] = 0;
         switch(e.dirn){

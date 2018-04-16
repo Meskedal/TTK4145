@@ -9,21 +9,6 @@ from order_fulfillment import *
 
 ## Global variables ##
 
-N_FLOORS = 8
-N_BUTTONS = 3
-
-EB_Idle = 0
-EB_DoorOpen = 1
-EB_Moving = 2
-
-B_HallUp = 0
-B_HallDown = 1
-B_Cab = 2
-
-D_Up = 1
-D_Down = -1
-D_Stop = 0
-
 TRAVEL_TIME = 3
 DOOR_OPEN_TIME = 3
 
@@ -37,7 +22,6 @@ class Assigner:
 		self.copy_elevator = deepcopy(self.elevator)
 
 	def time_to_idle(self):
-		#return 0
 		duration = 0
 		if self.copy_elevator.behaviour == EB_Idle:
 			elevator_dirn = self.choose_direction()
@@ -61,7 +45,6 @@ class Assigner:
 		return duration
 
 	def choose_direction(self):
-
 		if self.copy_elevator.dirn == D_Up:
 			if self.assignment_above():
 				return D_Up
@@ -79,22 +62,21 @@ class Assigner:
 		else:
 			return D_Stop
 
-	def assignment_above(self): # Returns boolean
-
+	def assignment_above(self):
 		for floor in range(self.copy_elevator.floor+1, N_FLOORS):
 			for button in range(0,N_BUTTONS):
 				if self.copy_elevator.requests[floor][button]:
 					return True
 		return False
 
-	def assignment_below(self): # Returns boolean
+	def assignment_below(self):
 		for floor in range(0, self.copy_elevator.floor):
 			for button in range(0,N_BUTTONS):
 				if self.copy_elevator.requests[floor][button]:
 					return True
 		return False
 
-	def should_stop(self): # Returns boolean
+	def should_stop(self):
 		if self.copy_elevator.dirn == D_Down:
 			if self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] or self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] or not self.assignment_below():
 				return True
@@ -113,30 +95,27 @@ class Assigner:
 		self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] = 0
 		if self.copy_elevator.dirn == D_Up:
 			self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
-			if(not self.assignment_above()):
+			if not self.assignment_above():
 				self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
 		elif self.copy_elevator.dirn == D_Down:
 			self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
-			if(not self.assignment_below()):
+			if not self.assignment_below():
 				self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
 		else:
 			self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
 			self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
 
-	def should_i_take_order(self): #Returns the worldview with the order added to the local elevator if fastest
+	def should_i_take_order(self):
 		worldview = self.worldview
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS-1):
 				if not self.is_order_taken(floor,button):
-					#print(self.peers)
 					for id in self.peers:
 						if(self.am_i_faster_than_id(id,floor)):
 							worldview['elevators'][self.id]['requests'][floor][button] = 1
 						else:
 							self.worldview['elevators'][self.id]['requests'][floor][button] = 0
 							break
-				else:
-					pass #Check next button
 		return worldview
 
 	def is_order_taken(self, floor, button):
@@ -145,16 +124,16 @@ class Assigner:
 		for id in self.peers:
 			try:
 				local_orders = self.worldview['elevators'][id]['requests']
-				if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
+				if hall_orders[floor][button][0] and not local_orders[floor][button]:
 					elevators_without_order += 1
-				elif(not hall_orders[floor][button][0] and local_orders[floor][button] and id == self.id): #Does something that the function is not designed to do
+				elif not hall_orders[floor][button][0] and local_orders[floor][button] and id == self.id:
 					self.worldview['elevators'][self.id]['requests'][floor][button] = 0
 				else:
-					break #The order is either taken or nonexistent
+					break #Order is taken
 
 			except KeyError as e:
-				print(e)
-				print(self.worldview['elevators'])
+				pass
+				#Dont care
 
 		if elevators_without_order >= len(self.peers): #No elevator has taken the order, it needs to be assigned
 			return False

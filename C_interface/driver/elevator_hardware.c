@@ -6,18 +6,13 @@
 #include <pthread.h>
 
 #include "elevator_hardware.h"
-#include "con_load.h"
 
 static int sockfd;
 static pthread_mutex_t sockmtx;
 
 void elevator_hardware_init() {
-    char ip[16] = {0};
-    char port[8] = {0};
-    con_load("C_interface/elevator_hardware.con",
-	     con_val("com_ip",   ip,   "%s")
-	     con_val("com_port", port, "%s")
-        )
+    char* ip = "localhost";
+    char* port = "15657";
 
     pthread_mutex_init(&sockmtx, NULL);
 

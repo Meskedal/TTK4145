@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-#include "con_load.h"
 #include "elevator.h"
 #include "driver/elevator_hardware.h"
 #include "requests.h"
@@ -14,14 +13,8 @@ static ElevOutputDevice     outputDevice;
 
 static void __attribute__((constructor)) fsm_init(){
     elevator = elevator_uninitialized();
-
-    con_load("C_interface/elevator.con",
-        con_val("doorOpenDuration_s", &elevator.config.doorOpenDuration_s, "%lf")
-        con_enum("clearRequestVariant", &elevator.config.clearRequestVariant,
-            con_match(CV_All)
-            con_match(CV_InDirn)
-        )
-    )
+    elevator.config.doorOpenDuration_s = 3;
+    elevator.config.clearRequestVariant = CV_All;
 }
 
 static void setAllLights(Elevator es){
@@ -39,65 +32,40 @@ void fsm_onInitBetweenFloors(void){
 }
 
 void fsm_onRequestButtonPress(int btn_floor, Button btn_type){
-    //printf("spam\n");
     switch(elevator.behaviour){
-
     case EB_DoorOpen:
         if(elevator.floor == btn_floor){
-              //printf("1\n");
-            //if (requests_shouldStop(elevator)){
-              //fsm_clear_floor(btn_floor);
               if (btn_type != 2){
                 elevator.requests[btn_floor][btn_type] = 1;
-                //elevator_hardware_set_door_open_lamp(1);
               }
-              //printf("hei\n");
               timer_start(elevator.config.doorOpenDuration_s);
-              //setAllLights(elevator);
-              //return 1;
-            //}
-
         } else {
-            //printf("5\n");
             elevator.requests[btn_floor][btn_type] = 1;
             if (elevator_hardware_get_floor_sensor_signal() == btn_floor){
-                //printf("6\n");
                 timer_start(elevator.config.doorOpenDuration_s);
             }
         }
         break;
 
     case EB_Moving:
-        //printf("2\n");
-        //if (elevator_hardware_get_floor_sensor_signal() == btn_floor){
-            //fsm_onFloorArrival(btn_floor);
-        //}
         elevator.requests[btn_floor][btn_type] = 1;
         break;
 
     case EB_Idle:
         if(elevator.floor == btn_floor){
-            //printf("3\n");
             elevator_hardware_set_door_open_lamp(1);
             timer_start(elevator.config.doorOpenDuration_s);
             elevator.behaviour = EB_DoorOpen;
-            //elevator.requests[btn_floor][btn_type] = 1;
         } else {
-            //printf("4\n");
             elevator.requests[btn_floor][btn_type] = 1;
             elevator.dirn = requests_chooseDirection(elevator);
             elevator_hardware_set_motor_direction(elevator.dirn);
             elevator.behaviour = EB_Moving;
         }
         break;
-
     }
-
     setAllLights(elevator);
 }
-
-
-
 
 int fsm_onFloorArrival(int newFloor){
     elevator.floor = newFloor;
@@ -124,29 +92,23 @@ int fsm_onFloorArrival(int newFloor){
     }
 }
 
-
-
 void fsm_onDoorTimeout(void){
     switch(elevator.behaviour){
     case EB_DoorOpen:
         elevator.dirn = requests_chooseDirection(elevator);
-
         elevator_hardware_set_door_open_lamp(0);
         elevator_hardware_set_motor_direction(elevator.dirn);
-
         if(elevator.dirn == D_Stop){
             elevator.behaviour = EB_Idle;
         } else {
             elevator.behaviour = EB_Moving;
         }
-
         break;
     default:
         break;
     }
-
 }
-
+//Functions defined for interface between c wrapper and c
 int fsm_get_e_floor(void){
     return elevator.floor;
 }

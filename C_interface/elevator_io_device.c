@@ -7,7 +7,6 @@
 #include <netdb.h>
 #include <stdio.h>
 
-#include "con_load.h"
 #include "driver/channels.h"
 
 
@@ -32,23 +31,12 @@ static int sockfd;
 
 static void __attribute__((constructor)) elev_init(void){
     int resetSimulator = 0;
-    con_load("elevator.con",
-        con_enum("elevatorType", &et,
-            con_match(ET_Simulation)
-            con_match(ET_Comedi)
-        )
-        con_val("resetSimulatorOnRestart", &resetSimulator, "%d")
-    )
 
     switch(et) {
 
     case ET_Simulation:
-        char ip[16] = {0};
-        char port[8] = {0};
-        con_load("simulator.con",
-            con_val("com_ip",   ip,   "%s")
-            con_val("com_port", port, "%s")
-        )
+        char* ip = "localhost";
+        char* port = "15657";
 
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         assert(sockfd != -1 && "Unable to set up socket");

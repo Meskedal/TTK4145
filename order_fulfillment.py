@@ -3,24 +3,37 @@
 
 __author__      = "gitgudd"
 
-import os, thread, threading, json
+import os, thread, threading
 from copy import deepcopy
 from ctypes import *
 from time import time
 
+#Routine for compiling c into shared library
+#os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
+#os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
+#os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
+#os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
+#os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
+#os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
+#os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
-os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
-os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
-os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
-os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
-os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
-os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
-os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
+## Global variables ##
 
-N_FLOORS = 8
+N_FLOORS = 4
 N_BUTTONS = 3
 
+#button type
+B_HallUp = 0
+B_HallDown = 1
+B_Cab = 2
+
+#dirn
+D_Up = 1
+D_Down = -1
+D_Stop = 0
+
+#elevator behaviour
 EB_Idle = 0
 EB_DoorOpen = 1
 EB_Moving = 2
@@ -28,9 +41,11 @@ EB_Moving = 2
 SET = 1
 CLEAR = 0
 
+#button clears
 UP = 0
 DOWN = 1
 BOTH = 2
+NOONE = 3
 
 class Thread(threading.Thread):
 	def __init__(self, t, *args):
@@ -39,8 +54,8 @@ class Thread(threading.Thread):
 		self.start()
 
 class Elevator:
-	def __init__(self, c_library):
-		if(c_library):
+	def __init__(self, c_library): #Can be initialized as real elevator or fake for simulation
+		if c_library:
 			self.c_library = c_library
 			self.behaviour = c_library.fsm_get_e_behaviour()
 			self.floor = c_library.fsm_get_e_floor()
@@ -65,8 +80,8 @@ class Elevator:
 
 	def get_requests(self):
 		requests = [[0 for x in range(0,N_BUTTONS)] for y in range(0,N_FLOORS)]
-		for floor in range(0,N_FLOORS):
-			for button in range(0,N_BUTTONS):
+		for floor in range(0, N_FLOORS):
+			for button in range(0, N_BUTTONS):
 				requests[floor][button] = self.c_library.fsm_get_e_request(c_int(floor),c_int(button))
 		return requests
 
@@ -109,19 +124,19 @@ class Fulfiller:
 
 
 	def initialize(self):
-		self.c_library = cdll.LoadLibrary('./C_interface/pymain.so')
+		self.c_library = cdll.LoadLibrary("pymain.so")
 		self.c_library.elevator_hardware_init()
 
-		if(self.c_library.elevator_hardware_get_floor_sensor_signal() == -1):
+		if self.c_library.elevator_hardware_get_floor_sensor_signal() == -1:
 			self.c_library.fsm_onInitBetweenFloors()
 
 	def run(self):
 		prev_button_status = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
-		while(self.run_event.is_set()):
+		while self.run_event.is_set():
 			self.poll_buttons(prev_button_status)
 			self.clear_orders()
 			self.synchronize_requests()
-			if(self.c_library.timer_timedOut()):
+			if self.c_library.timer_timedOut():
 				self.c_library.fsm_onDoorTimeout()
 				self.c_library.timer_stop()
 
@@ -130,32 +145,29 @@ class Fulfiller:
 			self.synchronize_elevator()
 			self.c_library.usleep(self.inputPollRate_ms*500)
 
-		print("c_main thread exited gracefully")
 
 	def clear_orders(self):
 		current_floor = self.c_library.elevator_hardware_get_floor_sensor_signal()
-		if (current_floor != -1):
+		if current_floor != -1:
 			elev_before = deepcopy(self.elevator.requests)
 			if(self.c_library.fsm_onFloorArrival(current_floor)):
-				#print "before" +repr(elev_before)
 				self.elevator.update()
-				#self.elevator.print_status()
 				if(self.hall_order_queue.empty()):
-					button = self.clear_direction(current_floor, elev_before)
-					if button == 3:
+					clear_button = self.clear_direction(current_floor, elev_before)
+					if clear_button == NOONE:
 						pass
-					elif button != 2:
-						self.hall_order_update(current_floor, button, CLEAR)
+					elif clear_button != BOTH:
+						self.hall_order_update(current_floor, clear_button, CLEAR)
 					else:
-						for button in range (0, N_BUTTONS-1):
-							self.hall_order_update(current_floor, button, CLEAR)
+						for clear_button in range (0, N_BUTTONS-1):
+							self.hall_order_update(current_floor, clear_button, CLEAR)
 
 	def poll_buttons(self, prev_button_status):
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS):
 				button_status = self.c_library.elevator_hardware_get_button_signal(button, floor)
-				if(button_status  and  button_status != prev_button_status[floor][button]):
-					if(button != 2):
+				if button_status  and  button_status != prev_button_status[floor][button]:
+					if button != B_Cab:
 						self.hall_order_update(floor, button, SET)
 					else:
 						self.c_library.fsm_onRequestButtonPress(floor, button)
@@ -163,26 +175,20 @@ class Fulfiller:
 
 
 	def synchronize_requests(self):
-		while(not self.local_orders_queue.empty()):
-			#print(time())
+		while not self.local_orders_queue.empty():
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
-					if(local_orders[floor][button] == 1 and self.elevator.requests[floor][button] == 0):
+					if local_orders[floor][button] == 1 and self.elevator.requests[floor][button] == 0:
 						self.elevator.c_library.fsm_onRequestButtonPress(floor, button)
-					elif(local_orders[floor][button] == CLEAR and self.elevator.requests[floor][button] == SET):
+					elif local_orders[floor][button] == CLEAR and self.elevator.requests[floor][button] == SET:
 						self.elevator.c_library.fsm_clear_floor(floor)
 					else:
 						pass
 			self.local_orders_queue.task_done()
 
 	def synchronize_elevator(self):
-		#if(self.elevator_queue.empty()):
-			#self.elevator_queue.put(self.elevator.elevator_to_dict())
-		#else:
-			#self.elevator_queue.get()
 		self.elevator_queue.put(self.elevator.elevator_to_dict())
-			#self.elevator_queue.task_done()
 
 	def hall_order_update(self, floor, button, status):
 		order = [floor, button, status]
@@ -194,11 +200,11 @@ class Fulfiller:
 			if self.elevator.requests[floor][button] != elev_before[floor][button]:
 				counter += 1
 				button_dirn = button;
-		if counter == 2:
-			return BOTH
-		elif counter == 1:
+		if counter == 1:
 			if button_dirn == UP:
 				return UP
 			return DOWN
+		elif counter == 2:
+			return BOTH
 		else:
-			return 3
+			return NOONE
