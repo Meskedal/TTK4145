@@ -56,6 +56,8 @@ def main():
 
 			state_machine.pass_local_worldview()
 			state_machine.pass_worldview()
+			if state_machine.hardware_failure():
+				go = False
 
 
 		except KeyboardInterrupt as e:

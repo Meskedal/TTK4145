@@ -110,9 +110,18 @@ class Assigner:
 
 
 	def clear_at_current_floor(self):
-		for button in range(0,N_BUTTONS):
-			if self.copy_elevator.requests[self.copy_elevator.floor][button] == 1:
-				self.copy_elevator.requests[self.copy_elevator.floor][button] = 0
+		self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] = 0
+		if self.copy_elevator.dirn == D_Up:
+			self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
+			if(not self.assignment_above()):
+				self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
+		elif self.copy_elevator.dirn == D_Down:
+			self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
+			if(not self.assignment_below()):
+				self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
+		else:
+			self.copy_elevator.requests[self.copy_elevator.floor][B_HallUp] = 0
+			self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] = 0
 
 	def should_i_take_order(self): #Returns the worldview with the order added to the local elevator if fastest
 		worldview = self.worldview

@@ -35,7 +35,8 @@ class State_machine:
         self.alone = False
         self.local_orders_queue = local_orders_queue
         self.worldview_queue = worldview_queue
-
+    def hardware_failure(self):
+        return self.worldview['elevators'][self.id]['hardware_failure']
 
     def redundancy_check(self):
         #print("hei")
@@ -48,9 +49,7 @@ class State_machine:
     def set_elevator(self, elevator):
         self.elevator = elevator
         self.state = STATE_SYNC_ELEVATOR
-
-        id = next(iter(elevator))
-        self.worldview['elevators'][id] = elevator[id]
+        self.worldview['elevators'][self.id] = elevator
         #self.redundancy_check()
 
 

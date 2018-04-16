@@ -9,13 +9,13 @@ from ctypes import *
 from network import *
 import os, json
 
-os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
-os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
-os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
-os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
-os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
-os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
-os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
+#os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
+#os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
+##os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
+#os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
+#os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
+#os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
+#os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
 
 N_FLOORS = 8
@@ -41,6 +41,8 @@ class Elevator:
 			self.dirn = c_library.fsm_get_e_dirn()
 			self.requests = self.get_requests()
 			self.id = network_local_ip()
+			self.hardware_failure = False
+			self.prev_time = None
 		else:
 			self.c_library = None
 			self.behaviour = None
@@ -80,12 +82,23 @@ class Elevator:
 
 	def elevator_to_dict(self):
 		elev = {}
-		elev[self.id] = {}
-		elev[self.id]["behaviour"] = self.behaviour
-		elev[self.id]["floor"] = self.floor
-		elev[self.id]["dirn"] = self.dirn
-		elev[self.id]["requests"] = self.requests
+		elev["behaviour"] = self.behaviour
+		elev["floor"] = self.floor
+		elev["dirn"] = self.dirn
+		elev["requests"] = self.requests
+		elev["hardware_failure"] = self.hardware_failure
 		return elev
+
+	def elevator_failure(self):
+		current_time = time()
+		if self.behaviour == EB_Moving and self.prev_time:
+			if current_time - self.prev_time > 10:
+				self.hardware_failure = True
+		else:
+			self.prev_time = current_time
+
+
+
 
 class Fulfiller:
 	def __init__(self, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock):
@@ -99,6 +112,7 @@ class Fulfiller:
 		self.run_event = order_fulfillment_run_event
 		self.inputPollRate_ms = 25
 		self.c_main = Thread(self.run)
+
 
 	def initialize(self):
 		self.c_library = cdll.LoadLibrary('./C_interface/pymain.so')
@@ -118,6 +132,7 @@ class Fulfiller:
 				self.c_library.timer_stop()
 
 			self.elevator.update()
+			self.elevator.elevator_failure()
 			self.synchronize_elevator()
 			self.c_library.usleep(self.inputPollRate_ms*1000)
 
