@@ -104,7 +104,7 @@ class Elevator:
 	def failure_check(self):
 		current_time = time()
 		if self.behaviour == EB_Moving and self.prev_time:
-			if current_time - self.prev_time > 20:
+			if current_time - self.prev_time > 10: #Enough time to complete any order
 				self.hardware_failure = True
 		else:
 			self.prev_time = current_time

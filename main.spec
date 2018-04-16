@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/home/student/Desktop/TTK4145WORKING'],
+             pathex=['/home/student/Desktop/TTK4145'],
              binaries=[],
              datas=[],
              hiddenimports=[],
