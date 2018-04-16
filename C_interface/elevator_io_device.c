@@ -39,7 +39,7 @@ static void __attribute__((constructor)) elev_init(void){
         )
         con_val("resetSimulatorOnRestart", &resetSimulator, "%d")
     )
-    
+
     switch(et) {
 
     case ET_Simulation:
@@ -49,13 +49,13 @@ static void __attribute__((constructor)) elev_init(void){
             con_val("com_ip",   ip,   "%s")
             con_val("com_port", port, "%s")
         )
-    
+
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         assert(sockfd != -1 && "Unable to set up socket");
 
         struct addrinfo hints = {
-            .ai_family      = AF_UNSPEC, 
-            .ai_socktype    = SOCK_STREAM, 
+            .ai_family      = AF_UNSPEC,
+            .ai_socktype    = SOCK_STREAM,
             .ai_protocol    = IPPROTO_TCP,
         };
         struct addrinfo* res;
@@ -68,13 +68,13 @@ static void __attribute__((constructor)) elev_init(void){
 
         if(resetSimulator){
             send(sockfd, (char[4]){0}, 4, 0);
-        }   
+        }
 
         break;
     }
-    
+
     ElevOutputDevice eo = elevio_getOutputDevice();
-    
+
     for(int floor = 0; floor < N_FLOORS; floor++) {
         for(Button btn = 0; btn < N_BUTTONS; btn++){
             eo.requestButtonLight(floor, btn, 0);
@@ -221,8 +221,3 @@ static void elev_simulation_write_stopButtonLight(int value){
 static void elev_simulation_write_motorDirection(Dirn dirn){
     send(sockfd, (char[4]){1, dirn}, 4, 0);
 }
-
-
-
-
-

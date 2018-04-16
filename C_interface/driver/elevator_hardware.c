@@ -18,25 +18,25 @@ void elevator_hardware_init() {
 	     con_val("com_ip",   ip,   "%s")
 	     con_val("com_port", port, "%s")
         )
-        
+
     pthread_mutex_init(&sockmtx, NULL);
-    
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     assert(sockfd != -1 && "Unable to set up socket");
-    
+
     struct addrinfo hints = {
-	.ai_family      = AF_UNSPEC, 
-	.ai_socktype    = SOCK_STREAM, 
+	.ai_family      = AF_UNSPEC,
+	.ai_socktype    = SOCK_STREAM,
 	.ai_protocol    = IPPROTO_TCP,
     };
     struct addrinfo* res;
     getaddrinfo(ip, port, &hints, &res);
-    
+
     int fail = connect(sockfd, res->ai_addr, res->ai_addrlen);
     assert(fail == 0 && "Unable to connect to simulator server");
-    
+
     freeaddrinfo(res);
-    
+
     send(sockfd, (char[4]) {0}, 4, 0);
 }
 

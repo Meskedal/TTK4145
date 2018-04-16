@@ -9,13 +9,13 @@ from ctypes import *
 from network import *
 import os, json
 
-#os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
-#os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
-##os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
-#os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
-#os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
-#os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
-#os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
+os.system("gcc -c -fPIC C_interface/main.c -o C_interface/main.o")
+os.system("gcc -c -fPIC C_interface/driver/elevator_hardware.c -o C_interface/driver/elevator_hardware.o")
+os.system("gcc -c -fPIC C_interface/fsm.c -o C_interface/fsm.o")
+os.system("gcc -c -fPIC C_interface/timer.c -o C_interface/timer.o")
+os.system("gcc -c -fPIC C_interface/elevator.c -o C_interface/elevator.o")
+os.system("gcc -c -fPIC C_interface/requests.c -o C_interface/requests.o")
+os.system("gcc -shared -Wl,-soname,C_interface/pymain.so -o C_interface/pymain.so  C_interface/main.o C_interface/driver/elevator_hardware.o C_interface/fsm.o C_interface/timer.o C_interface/elevator.o C_interface/requests.o -lc")
 
 
 N_FLOORS = 8
@@ -40,7 +40,6 @@ class Elevator:
 			self.floor = c_library.fsm_get_e_floor()
 			self.dirn = c_library.fsm_get_e_dirn()
 			self.requests = self.get_requests()
-			self.id = network_local_ip()
 			self.hardware_failure = False
 			self.prev_time = None
 		else:
@@ -98,17 +97,14 @@ class Elevator:
 			self.prev_time = current_time
 
 
-
-
 class Fulfiller:
-	def __init__(self, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock):
+	def __init__(self, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue):
 		self.c_library = None
 		self.initialize()
 		self.elevator = Elevator(self.c_library)
 		self.elevator_queue = elevator_queue
 		self.local_orders_queue = local_orders_queue
 		self.hall_order_queue = hall_order_queue
-		self.print_lock = print_lock
 		self.run_event = order_fulfillment_run_event
 		self.inputPollRate_ms = 25
 		self.c_main = Thread(self.run)
@@ -143,9 +139,9 @@ class Fulfiller:
 		if (current_floor != -1):
 			elev_before = deepcopy(self.elevator.requests)
 			if(self.c_library.fsm_onFloorArrival(current_floor)):
-				print "before" +repr(elev_before)
+				#print "before" +repr(elev_before)
 				self.elevator.update()
-				self.elevator.print_status()
+				#self.elevator.print_status()
 				if(self.hall_order_queue.empty()):
 					button = self.clear_direction(current_floor, elev_before)
 					if button == 3:

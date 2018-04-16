@@ -23,6 +23,7 @@ STATE_ASSIGN = 7
 
 class State_machine:
     def __init__(self, local_orders_queue, worldview_queue):
+        self.id = None
         self.config_init()
         self.state = STATE_NONE
         self.worldview = worldview = {}
@@ -30,7 +31,6 @@ class State_machine:
     	self.worldview['elevators'] = {}
         self.peers = None
         self.lost_peers = None
-        self.id = network_local_ip()
         self.elevator = None
         self.alone = False
         self.local_orders_queue = local_orders_queue
@@ -66,13 +66,25 @@ class State_machine:
         self.local_orders_queue.put(local_orders)
 
     def pass_worldview(self):
-        if (self.worldview_queue.empty()):
+        worldview_with_id = {}
+        worldview_with_id[self.id] = self.worldview
+        print(11)
+        #self.worldview_queue.join()
+        #if (self.worldview_queue.empty()):
             #worldview_queue.join()
-            self.worldview_queue.put(self.worldview)
+            #print(12)
+        self.worldview_queue.put(worldview_with_id)
+        print(12)
             #worldview_queue.task_done()
-        else:
-            self.worldview_queue.get() ##Removing essential information?
-            self.worldview_queue.put(self.worldview)
+        #else:
+            #try:
+                #print(14)
+                #self.worldview_queue.get(True, 3) ##Removing essential information?
+                #print(15)
+                #self.worldview_queue.put(worldview_with_id)
+                #print(16)
+            #except:
+                #print("Woops")
 
     def delete_lost_peers(self): ##FIX this
     	for id in self.worldview['elevators']:
@@ -113,15 +125,16 @@ class State_machine:
         self.worldview['hall_orders'][floor][button] = [button_status, time()]
         if button_status == 0:
             self.worldview['elevators'][self.id]['requests'][floor][button] = 0
-
+    def get_id(self):
+        return self.id
 
     def config_init(self):
         parser = ap.ArgumentParser(description='Port for simulation')
     	parser.add_argument('-p', '--port', dest='sim_port', required=False, metavar='<port_number>')
-    	parser.add_argument('-f', '--alone', dest='alone', required=False, metavar='<if_elevator_alone')
+    	parser.add_argument('-i', '--id', dest='id', required=True, metavar='<elev_id')
     	args = parser.parse_args()
     	port_number = args.sim_port #Sender's email address
-    	alone = args.alone
+    	self.id = args.id
     	if port_number:
     		with open('C_interface/elevator_hardware.con', 'r') as file:
     			print(port_number)

@@ -128,6 +128,7 @@ class Assigner:
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS-1):
 				if not self.is_order_taken(floor,button):
+					#print(self.peers)
 					for id in self.peers:
 						if(self.am_i_faster_than_id(id,floor)):
 							worldview['elevators'][self.id]['requests'][floor][button] = 1
