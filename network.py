@@ -11,7 +11,7 @@ class Thread(threading.Thread):
 		self.start()
 
 class Network:
-	def __init__(self, heartbeatEvent, worldview_queue, print_lock):
+	def __init__(self, heartbeat_run_event, worldview_queue, print_lock):
 
 		self.peers = {}
 		self.peers[network_local_ip()] = time()
@@ -21,19 +21,19 @@ class Network:
 		self.worldview_foreign_queue = Queue.Queue()
 		self.print_lock = print_lock
 
-		self.heartbeatEvent = heartbeatEvent
-		self.receiveEvent = threading.Event()
-		self.broadcastEvent = threading.Event()
-		self.receiveEvent.set()
-		self.broadcastEvent.set()
+		self.run_event = heartbeat_run_event
+		self.receive_run_event = threading.Event()
+		self.broadcast_run_event = threading.Event()
+		self.receive_run_event.set()
+		self.broadcast_run_event.set()
 
 		self.heartbeat = Thread(self.run)
-		self.receive = Receive(self.peers_queue, self.receiveEvent, self.worldview_foreign_queue, self.print_lock)
-		self.broadcast = Broadcast(self.broadcastEvent, worldview_queue, self.print_lock)
+		self.receive = Receive(self.peers_queue, self.receive_run_event, self.worldview_foreign_queue, self.print_lock)
+		self.broadcast = Broadcast(self.broadcast_run_event, worldview_queue, self.print_lock)
 
 
 	def run(self):
-		while(self.heartbeatEvent.isSet()):
+		while(self.run_event.isSet()):
 			current_time = time()
 			if not self.peers_queue.empty():
 				item = self.peers_queue.get()
@@ -50,8 +50,8 @@ class Network:
 					break
 			#self.peers_queue.task_done()
 
-		self.receiveEvent.clear()
-		self.broadcastEvent.clear()
+		self.receive_run_event.clear()
+		self.broadcast_run_event.clear()
 
 		self.print_lock.acquire()
 		print("Thread heartbeat exited gracefully")
@@ -71,10 +71,10 @@ class Network:
 			return None
 
 class Receive:
-	def __init__(self, peers_queue, receiveEvent, worldview_foreign_queue, print_lock):
+	def __init__(self, peers_queue, receive_run_event, worldview_foreign_queue, print_lock):
 		self.peers_queue = peers_queue
 		self.timeout = 2
-		self.receiveEvent = receiveEvent
+		self.run_event = receive_run_event
 		self.worldview_foreign_queue = worldview_foreign_queue
 		self.print_lock = print_lock
 		self.receive = Thread(self.run)
@@ -94,7 +94,7 @@ class Receive:
 	def run(self): #Receives worldview from id and passes id with timestamp to peers_queue.
 		sock = self.socket_init()
 											  #id:worldview is also passed to worldview_foreign_queue
-		while(self.receiveEvent.isSet()):
+		while(self.run_event.isSet()):
 			try:
 				data, addr = sock.recvfrom(1024)
 				worldview_foreign = json.loads(data)
@@ -102,7 +102,7 @@ class Receive:
 				id_foreign = next(iter(worldview_foreign))
 				timestamp = time()
 				peer_entry = [id_foreign, timestamp]
-				if (self.receiveEvent.isSet()):
+				if (self.run_event.isSet()):
 					#peers_queue.join()
 					self.peers_queue.put(peer_entry)
 					#worldview_foreign_queue.join()
@@ -112,17 +112,15 @@ class Receive:
 				self.print_lock.acquire()
 				print(e)
 				self.print_lock.release()
-			#except:
-				#print(worldview_foreign)
-				#print "Unexpected error:", sys.exc_info()[0]
-				#raise
+				raise
+
 		self.print_lock.acquire()
 		print("Thread receiving exited gracefully")
 		self.print_lock.release()
 
 class Broadcast:
-	def __init__(self, broadcastEvent, worldview_queue, print_lock):
-		self.broadcastEvent = broadcastEvent
+	def __init__(self, broadcast_run_event, worldview_queue, print_lock):
+		self.run_event = broadcast_run_event
 		self.worldview_queue = worldview_queue
 		self.print_lock = print_lock
 		self.broadcast = Thread(self.run)
@@ -131,11 +129,11 @@ class Broadcast:
 		#target_ip = '127.0.0.1'
 		target_port = 20002
 		sock = self.sock_init()
-		while(self.broadcastEvent.isSet()):
+		while(self.run_event.isSet()):
 			sleep(0.2)
 			worldview = self.network_create_worldview()
 			worldview = json.dumps(worldview)
-			if(self.broadcastEvent.isSet()):
+			if(self.run_event.isSet()):
 				sock.sendto(worldview, ('<broadcast>', target_port))
 
 		self.print_lock.acquire()
@@ -149,7 +147,7 @@ class Broadcast:
 		return sock
 
 	def network_create_worldview(self): #Creates worldview dictionary with ip as key
-		while(self.worldview_queue.empty() and self.broadcastEvent.isSet()):
+		while(self.worldview_queue.empty() and self.run_event.isSet()):
 			sleep(0.02)
 	#	self.worldview_queue.join()
 		worldview = self.worldview_queue.get()

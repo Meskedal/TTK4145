@@ -96,7 +96,7 @@ class Fulfiller:
 		self.local_orders_queue = local_orders_queue
 		self.hall_order_queue = hall_order_queue
 		self.print_lock = print_lock
-		self.order_fulfillment_run_event = order_fulfillment_run_event
+		self.run_event = order_fulfillment_run_event
 		self.inputPollRate_ms = 25
 		self.c_main = Thread(self.run)
 
@@ -109,7 +109,7 @@ class Fulfiller:
 
 	def run(self):
 		prev_button_status = [[0 for x in range(0, N_BUTTONS)] for y in range(0, N_FLOORS)]
-		while(self.order_fulfillment_run_event.is_set()):
+		while(self.run_event.is_set()):
 			self.poll_buttons(prev_button_status)
 			self.clear_orders()
 			self.synchronize_requests()

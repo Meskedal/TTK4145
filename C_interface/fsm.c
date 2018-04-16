@@ -117,6 +117,7 @@ int fsm_onFloorArrival(int newFloor){
 
     case EB_DoorOpen:
         if(requests_shouldStop(elevator)){
+            printf("stuck\n");
             return 1;
         }
     default:
