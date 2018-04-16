@@ -91,7 +91,7 @@ class Elevator:
 	def elevator_failure(self):
 		current_time = time()
 		if self.behaviour == EB_Moving and self.prev_time:
-			if current_time - self.prev_time > 10:
+			if current_time - self.prev_time > 20:
 				self.hardware_failure = True
 		else:
 			self.prev_time = current_time
@@ -130,7 +130,7 @@ class Fulfiller:
 			self.elevator.update()
 			self.elevator.elevator_failure()
 			self.synchronize_elevator()
-			self.c_library.usleep(self.inputPollRate_ms*1000)
+			self.c_library.usleep(self.inputPollRate_ms*500)
 
 		print("c_main thread exited gracefully")
 
@@ -166,6 +166,7 @@ class Fulfiller:
 
 	def synchronize_requests(self):
 		while(not self.local_orders_queue.empty()):
+			#print(time())
 			local_orders = self.local_orders_queue.get()
 			for floor in range (0, N_FLOORS):
 				for button in range (0, N_BUTTONS-1):
@@ -183,7 +184,7 @@ class Fulfiller:
 		else:
 			self.elevator_queue.get()
 			self.elevator_queue.put(self.elevator.elevator_to_dict())
-			self.elevator_queue.task_done()
+			#self.elevator_queue.task_done()
 
 	def hall_order_update(self, floor, button, status):
 		order = [floor, button, status]

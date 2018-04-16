@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import threading, thread, Queue, socket, errno, json
+import threading, thread, Queue, socket, json
 from time import sleep, time
-import os, sys
+
 
 
 class Thread(threading.Thread):
@@ -12,21 +12,21 @@ class Thread(threading.Thread):
 
 class Network:
 	def __init__(self, heartbeat_run_event, worldview_queue):
-
+		self.heartbeat_timeout = 2
 		self.peers = {}
-		#self.peers[] = time()
-		self.lost = {}
+		self.lost_peers = {}
 
 		self.peers_queue = Queue.Queue()
 		self.worldview_foreign_queue = Queue.Queue()
 
-		self.run_event = heartbeat_run_event
 		self.receive_run_event = threading.Event()
 		self.broadcast_run_event = threading.Event()
 		self.receive_run_event.set()
 		self.broadcast_run_event.set()
 
+		self.run_event = heartbeat_run_event
 		self.heartbeat = Thread(self.run)
+
 		self.receive = Receive(self.peers_queue, self.receive_run_event, self.worldview_foreign_queue)
 		self.broadcast = Broadcast(self.broadcast_run_event, worldview_queue)
 
@@ -35,17 +35,17 @@ class Network:
 		while(self.run_event.isSet()):
 			current_time = time()
 			if not self.peers_queue.empty():
-				item = self.peers_queue.get()
-				self.peers[item[0]] = item[1]
+				id, time_stamp = self.peers_queue.get()
+				self.peers[id] = time_stamp
 				self.peers_queue.task_done()
-				if item[0] in self.lost:
-					del self.lost[item[0]]
+				if id in self.lost_peers:
+					del self.lost_peers[id]
 				#self.peers_queue2.put(self.peers)
 
-			for ip in self.peers:
-				if(self.peers[ip] < current_time - 1): #Hearbeat timeout time
-					self.lost[ip] = current_time
-					del self.peers[ip]
+			for id in self.peers:
+				if(self.peers[id] < current_time - self.heartbeat_timeout):
+					self.lost_peers[id] = current_time
+					del self.peers[id]
 					break
 			#self.peers_queue.task_done()
 
@@ -57,10 +57,8 @@ class Network:
 
 	def get_peers(self):
 		self.peers_queue.join()
-		return self.peers
-
-	def get_lost(self):
-		return self.lost
+		peer_statuses = [self.peers, self.lost_peers]
+		return peer_statuses
 
 	def get_worldview_foreign(self):
 		if(not self.worldview_foreign_queue.empty()):
@@ -84,8 +82,9 @@ class Receive:
 		try:
 			sock.bind(('<broadcast>', 20002))
 		except:
-			print 'failure to bind'
+			print 'failure to bind, critical error'
 			sock.close()
+			raise
 			return None
 		return sock
 
@@ -95,16 +94,12 @@ class Receive:
 		while(self.run_event.isSet()):
 			try:
 				data, addr = sock.recvfrom(1024)
-				worldview_foreign = json.loads(data)
-				#print worldview_foreign
-				id_foreign = next(iter(worldview_foreign))
-				timestamp = time()
-				peer_entry = [id_foreign, timestamp]
+				worldview_foreign_with_id = json.loads(data)
+				id_foreign = next(iter(worldview_foreign_with_id))
+				peer_entry = [id_foreign, time()]
 				if (self.run_event.isSet()):
-					#peers_queue.join()
 					self.peers_queue.put(peer_entry)
-					#worldview_foreign_queue.join()
-					self.worldview_foreign_queue.put(worldview_foreign)
+					self.worldview_foreign_queue.put(worldview_foreign_with_id)
 
 			except socket.timeout as e:
 				print(e)
@@ -119,39 +114,23 @@ class Broadcast:
 		self.worldview_queue = worldview_queue
 		self.broadcast = Thread(self.run)
 
-	def run(self):
-		#target_ip = '127.0.0.1'
-		target_port = 20002
-		sock = self.sock_init()
-		while(self.run_event.isSet()):
-			sleep(0.1)
-			while(self.worldview_queue.empty() and self.run_event.isSet()):
-				sleep(0.02)
-			while(not self.worldview_queue.empty()):
-					worldview = self.worldview_queue.get()
-			worldview = json.dumps(worldview)
-			if(self.run_event.isSet()):
-				sock.sendto(worldview, ('<broadcast>', target_port))
-			self.worldview_queue.task_done()
-
-		print("Thread broadcasting exited gracefully")
-
 	def sock_init(self):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		return sock
 
-def print_peers(Peers):
-	for ip in Peers:
-		print(ip + " - " + repr(Peers[ip]))
-	return
+	def run(self):
+		target_port = 20002
+		sock = self.sock_init()
+		while(self.run_event.isSet()):
+			sleep(0.2)
+			while(self.worldview_queue.empty() and self.run_event.isSet()):
+				pass
+			while(not self.worldview_queue.empty()):
+					worldview_with_id = self.worldview_queue.get()
+			worldview_with_id = json.dumps(worldview_with_id)
+			sock.sendto(worldview_with_id, ('<broadcast>', target_port))
+			self.worldview_queue.task_done()
 
-def network_local_ip():
-
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	s.connect(("8.8.8.8", 80))
-	ip = s.getsockname()[0]
-	s.close()
-		#print(os.getpid())
-	return ip + ':' +  repr(os.getpid())
+		print("Thread broadcasting exited gracefully")

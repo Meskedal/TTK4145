@@ -5,65 +5,61 @@ import pprint
 
 from order_fulfillment import *
 from network import *
-from order_assignment import *
 from fsm import *
-import subprocess
 
 
 
 
 def main():
-	local_orders_queue = Queue.Queue()
-	worldview_queue = Queue.Queue()
-	elevator_queue = Queue.Queue()
-	hall_order_queue = Queue.Queue()
+	local_orders_to_fullfilment_queue = Queue.Queue()
+	worldview_to_broadcast_queue = Queue.Queue()
+	elevator_to_worldview_queue = Queue.Queue()
+	hall_order_to_worldview_queue = Queue.Queue()
 
-	state_machine = State_machine(local_orders_queue, worldview_queue)
+	wv_handler = Worldview_handler(local_orders_to_fullfilment_queue, worldview_to_broadcast_queue)
 
 
 
 	heartbeat_run_event = threading.Event()
 	heartbeat_run_event.set()
-	network = Network(heartbeat_run_event, worldview_queue)
+	network = Network(heartbeat_run_event, worldview_to_broadcast_queue)
 
 	order_fulfillment_run_event = threading.Event()
 	order_fulfillment_run_event.set()
-	fulfiller = Fulfiller(order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue)
+	fulfiller = Fulfiller(order_fulfillment_run_event, elevator_to_worldview_queue, local_orders_to_fullfilment_queue, hall_order_to_worldview_queue)
 	#order_fulfillment2 = Thread(order_fulfillment, order_fulfillment_run_event, elevator_queue, local_orders_queue, hall_order_queue, print_lock)
 	go = True
 	while(go):
 		try:
-			peers = network.get_peers()
-			lost = network.get_lost()
-			state_machine.update_peers(peers,lost)
+			peers, lost_peers = network.get_peers()
+			wv_handler.update_peers(peers,lost_peers)
 			print(1)
-			elevator_queue.join()
-			elevator = elevator_queue.get()
-			elevator_queue.task_done()
+			#elevator_to_worldview_queue.join()
+			elevator = elevator_to_worldview_queue.get()
+			#elevator_to_worldview_queue.task_done()
 			print(2)
-			state_machine.set_elevator(elevator)
-
+			wv_handler.worldview_update_elevator(elevator)
 			print(3)
 
 			worldview_foreign = network.get_worldview_foreign()
 			if (worldview_foreign):
 				print(4)
-				state_machine.sync_worldviews(worldview_foreign)
+				wv_handler.sync_worldviews(worldview_foreign)
 			print(5)
-			while not hall_order_queue.empty():
-				order = hall_order_queue.get()
+			while not hall_order_to_worldview_queue.empty():
+				order = hall_order_to_worldview_queue.get()
 				print(6)
-				state_machine.update_order(order)
-				hall_order_queue.task_done()
+				wv_handler.update_order(order)
+				hall_order_to_worldview_queue.task_done()
 
 			print(7)
-			state_machine.assign_orders()
+			wv_handler.assign_orders()
 			print(8)
-			state_machine.pass_local_worldview()
+			wv_handler.pass_local_worldview()
 			print(9)
-			state_machine.pass_worldview()
+			wv_handler.pass_worldview_with_id()
 			print(10)
-			if state_machine.hardware_failure():
+			if wv_handler.local_hardware_failure():
 				go = False
 
 
