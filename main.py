@@ -49,11 +49,12 @@ def main():
 			while not hall_order_queue.empty():
 				order = hall_order_queue.get()
 				state_machine.update_order(order)
+				hall_order_queue.task_done()
+
 
 			state_machine.assign_orders()
 
-			if(True):
-				state_machine.pass_local_worldview()
+			state_machine.pass_local_worldview()
 			state_machine.pass_worldview()
 
 

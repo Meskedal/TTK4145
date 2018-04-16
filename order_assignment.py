@@ -95,7 +95,6 @@ class Assigner:
 		return False
 
 	def should_stop(self): # Returns boolean
-
 		if self.copy_elevator.dirn == D_Down:
 			if self.copy_elevator.requests[self.copy_elevator.floor][B_HallDown] or self.copy_elevator.requests[self.copy_elevator.floor][B_Cab] or not self.assignment_below():
 				return True
@@ -115,9 +114,8 @@ class Assigner:
 			if self.copy_elevator.requests[self.copy_elevator.floor][button] == 1:
 				self.copy_elevator.requests[self.copy_elevator.floor][button] = 0
 
-	def should_i_take_order(self):
+	def should_i_take_order(self): #Returns the worldview with the order added to the local elevator if fastest
 		worldview = self.worldview
-		#counter = 0
 		for floor in range (0, N_FLOORS):
 			for button in range (0, N_BUTTONS-1):
 				if not self.is_order_taken(floor,button):
@@ -135,9 +133,6 @@ class Assigner:
 		hall_orders = self.worldview['hall_orders']
 		elevators_without_order = 0
 		for id in self.peers:
-			#print("")
-			#print(self.peers)
-			#print(self.worldview['elevators'])
 			try:
 				local_orders = self.worldview['elevators'][id]['requests']
 				if(hall_orders[floor][button][0] and not local_orders[floor][button]):#must do this for all peers before calculating time
@@ -170,120 +165,3 @@ class Assigner:
 				elif abs(self.elevator.floor - floor) - abs(other_elevator.elevator.floor - floor) == 0 and self.id > id:
 					return False #The elevator with the lowest id takes order
 		return True
-
-
-
-
-
-
-########################
-def assignment_time_to_idle(elevator): # Remember to pass a copy of the elevator with the new unassigned order added to requests.
-	duration = 0
-	elevator_copy = deepcopy(elevator)
-	if elevator_copy.behaviour == EB_Idle:
-		elevator_dirn = assignment_choose_direction(elevator_copy)
-		if elevator_dirn == D_Stop:
-			return duration
-	elif elevator_copy.behaviour == EB_Moving:
-		duration += TRAVEL_TIME/2
-		elevator_copy.floor += elevator_copy.dirn
-	elif elevator_copy.behaviour == EB_DoorOpen:
-		duration -= DOOR_OPEN_TIME/2
-	while True:
-		if assignment_should_stop(elevator_copy):
-			elevator_copy = assignment_clear_at_current_floor(elevator_copy, True)
-			duration += DOOR_OPEN_TIME
-			elevator_copy.dirn = assignment_choose_direction(elevator_copy);
-			if elevator_copy.dirn == D_Stop:
-				return duration
-
-		elevator_copy.floor += elevator_copy.dirn;
-		duration += TRAVEL_TIME
-	return duration
-
-def assignment_distance_to_order(elevator):
-	distance = 0
-	for f in range(0, N_FLOORS):
-		for btn in range(0,N_BUTTONS):
-			if elevator.requests[f][btn]:
-				distance = abs(elevator.floor - f)
-	return distance
-
-
-
-def assignment_choose_direction(elevator):
-
-	if elevator.dirn == D_Up:
-		if assignment_above(elevator):
-			return D_Up
-		elif assignment_below(elevator):
-			return D_Down
-		else:
-			return D_Stop
-	elif elevator.dirn == D_Stop:
-		if assignment_below(elevator):
-			return D_Down
-		elif assignment_above(elevator):
-			return D_Up
-		else:
-			return D_Stop
-	else:
-		return D_Stop
-
-
-
-def assignment_above(elevator): # Returns boolean
-
-	for f in range(elevator.floor+1, N_FLOORS):
-		for btn in range(0,N_BUTTONS):
-			if elevator.requests[f][btn]:
-				return True
-	return False
-
-def assignment_below(elevator): # Returns boolean
-	for f in range(0, elevator.floor):
-		for btn in range(0,N_BUTTONS):
-			if elevator.requests[f][btn]:
-				return True
-	return False
-
-def assignment_should_stop(elevator): # Returns boolean
-	#print "dirn: " + repr(elevator.dirn)
-	#print "floor: " + repr(elevator.floor)
-	#print (elevator.dirn)
-	#print(elevator.floor)
-	#print(elevator.requests)
-	if elevator.dirn == D_Down:
-		if elevator.requests[elevator.floor][B_HallDown] or elevator.requests[elevator.floor][B_Cab] or not assignment_below(elevator):
-			#print("case 1")
-			#print(elevator.floor)
-			#print(elevator.requests)
-			return True
-		else:
-			return False
-	elif elevator.dirn == D_Up:
-		if elevator.requests[elevator.floor][B_HallUp] or elevator.requests[elevator.floor][B_Cab] or not assignment_above(elevator):
-			#print("case 2")
-			return True
-		else:
-			return False
-	else:
-		#print("3")
-		return True
-
-
-def assignment_clear_at_current_floor(elevator, simulate):
-	#print("hei")
-	elevator_new = deepcopy(elevator)
-	#print elevator_new.floor
-	for btn in range(0,N_BUTTONS):
-		if elevator_new.requests[elevator_new.floor][btn] == 1:
-			elevator_new.requests[elevator_new.floor][btn] = 0
-			if simulate == False:
-				if elevator.requests[elevator.floor][btn] == 1:
-					elevator.requests[elevator.floor][btn] = 0
-				return  elevator
-
-	return elevator_new
-
-#hei

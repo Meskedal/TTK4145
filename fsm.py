@@ -51,7 +51,7 @@ class State_machine:
 
         id = next(iter(elevator))
         self.worldview['elevators'][id] = elevator[id]
-        self.redundancy_check()
+        #self.redundancy_check()
 
 
 
@@ -61,10 +61,10 @@ class State_machine:
         self.delete_lost_peers()
 
     def pass_local_worldview(self):
-        if len(self.peers) >= 2:
-            local_orders = self.worldview['elevators'][self.id]['requests']
-            self.local_orders_queue.join()
-            self.local_orders_queue.put(local_orders)
+        #if len(self.peers) >= 2:
+        local_orders = self.worldview['elevators'][self.id]['requests']
+        self.local_orders_queue.join()
+        self.local_orders_queue.put(local_orders)
 
     def pass_worldview(self):
         if (self.worldview_queue.empty()):
@@ -85,9 +85,9 @@ class State_machine:
         #return 1
 
     def assign_orders(self):
-        if len(self.peers) >= 2:
-            assigner_thingy = Assigner(self.worldview, self.id, self.peers) #local requests goes from 0 to 1 after assigner
-            self.worldview = assigner_thingy.should_i_take_order()
+        #if len(self.peers) >= 2:
+        assigner_thingy = Assigner(self.worldview, self.id, self.peers) #local requests goes from 0 to 1 after assigner
+        self.worldview = assigner_thingy.should_i_take_order()
 
 
 

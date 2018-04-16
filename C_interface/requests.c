@@ -56,6 +56,12 @@ int requests_shouldStop(Elevator e){
         return 1;
     }
 }
+int requests_atCurrentFloor(Elevator e){
+      return
+          e.requests[e.floor][B_HallUp]   ||
+          e.requests[e.floor][B_HallDown] ||
+          e.requests[e.floor][B_Cab];
+}
 
 
 //Elevator requests_clearAtCurrentFloor(Elevator e){
